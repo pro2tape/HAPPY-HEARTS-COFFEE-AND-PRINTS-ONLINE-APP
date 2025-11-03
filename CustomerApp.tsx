@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { CartItem, MenuItem } from './types';
 import { menuData } from './data/menuData';
 import MenuItemCard from './components/MenuItemCard';
@@ -46,8 +46,35 @@ const CustomerApp: React.FC = () => {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [userPosition, setUserPosition] = useState<GeolocationCoordinates | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>(Object.keys(menuData)[0].replace(/\s+/g, '-').replace(/&/g, 'and'));
+  const categoryRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const allMenuItems = useMemo(() => Object.values(menuData).flat(), []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                setActiveCategory(entry.target.id);
+            }
+        });
+      },
+      { rootMargin: '-20% 0px -75% 0px' } 
+    );
+
+    const refs = Object.values(categoryRefs.current);
+    refs.forEach((ref) => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => {
+      refs.forEach((ref) => {
+        if (ref) observer.unobserve(ref);
+      });
+    };
+  }, []);
+
 
   const addToCart = (itemToAdd: MenuItem, quantity: number, selectedSize?: { name: string; price: number }) => {
     const cartId = selectedSize ? `${itemToAdd.id}-${selectedSize.name}` : `${itemToAdd.id}`;
@@ -146,24 +173,90 @@ const CustomerApp: React.FC = () => {
         </div>
       </header>
 
-      <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-        {Object.entries(menuData).map(([category, items]) => {
-            const IconComponent = categoryIcons[category];
-            return (
-              <section key={category} className="mb-12">
-                <div className="flex items-center gap-4 mb-6 border-b-4 border-orange-400 pb-2">
-                  {IconComponent && <IconComponent className="h-10 w-10 text-amber-800" />}
-                  <h2 className="text-4xl font-bold text-amber-800 tracking-tight">{category}</h2>
+      <div className="container mx-auto lg:flex lg:gap-8">
+         {/* Left Sidebar - Desktop */}
+        <aside className="hidden lg:block w-64 py-8 sticky top-[88px] self-start max-h-[calc(100vh-88px)] overflow-y-auto">
+          <nav>
+            <h3 className="text-xl font-bold text-amber-900 mb-4 px-3">Menu Categories</h3>
+            <ul className="space-y-1">
+              {Object.keys(menuData).map(category => {
+                const categoryId = category.replace(/\s+/g, '-').replace(/&/g, 'and');
+                return (
+                  <li key={category}>
+                    <a
+                      href={`#${categoryId}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        document.getElementById(categoryId)?.scrollIntoView({ behavior: 'smooth' });
+                        setActiveCategory(categoryId);
+                      }}
+                      className={`block w-full text-left p-3 rounded-lg font-semibold transition-colors ${
+                        activeCategory === categoryId
+                          ? 'bg-orange-500 text-white'
+                          : 'text-amber-800 hover:bg-amber-100'
+                      }`}
+                    >
+                      {category}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        </aside>
+
+        <main className="flex-1 py-4 sm:py-6 lg:py-8 px-4 sm:px-6 lg:px-0">
+            {/* Top Category Nav - Mobile */}
+            <div className="lg:hidden mb-6 sticky top-[88px] bg-amber-50/90 backdrop-blur-sm py-2 z-10 -mx-4 px-4">
+                <div className="grid grid-cols-3 gap-2">
+                {Object.keys(menuData).map(category => {
+                    const categoryId = category.replace(/\s+/g, '-').replace(/&/g, 'and');
+                    return (
+                        <a
+                        key={category}
+                        href={`#${categoryId}`}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            document.getElementById(categoryId)?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className={`px-3 py-2 rounded-lg font-semibold text-sm transition-colors flex items-center justify-center text-center ${
+                            activeCategory === categoryId
+                            ? 'bg-orange-500 text-white shadow-md'
+                            : 'bg-white text-amber-800 shadow-sm'
+                        }`}
+                        >
+                        {category}
+                        </a>
+                    );
+                })}
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                  {items.map(item => (
-                    <MenuItemCard key={item.id} item={item} onAddToCart={addToCart} />
-                  ))}
-                </div>
-              </section>
-            );
-        })}
-      </main>
+            </div>
+
+            {Object.entries(menuData).map(([category, items]) => {
+                const IconComponent = categoryIcons[category];
+                const categoryId = category.replace(/\s+/g, '-').replace(/&/g, 'and');
+                return (
+                <section 
+                    key={category} 
+                    id={categoryId}
+                    // FIX: The ref callback should not return a value. Wrapped in curly braces to ensure an implicit return of undefined.
+                    ref={el => {categoryRefs.current[categoryId] = el}}
+                    className="mb-12 scroll-mt-32"
+                >
+                    <div className="flex items-center gap-4 mb-6 border-b-4 border-orange-400 pb-2">
+                    {IconComponent && <IconComponent className="h-10 w-10 text-amber-800" />}
+                    <h2 className="text-4xl font-bold text-amber-800 tracking-tight">{category}</h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                    {items.map(item => (
+                        <MenuItemCard key={item.id} item={item} onAddToCart={addToCart} />
+                    ))}
+                    </div>
+                </section>
+                );
+            })}
+        </main>
+      </div>
 
       <Cart 
         isOpen={isCartOpen}

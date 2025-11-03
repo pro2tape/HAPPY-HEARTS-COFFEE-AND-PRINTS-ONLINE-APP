@@ -103,7 +103,7 @@ export const menuData: MenuData = {
     { id: 71, name: 'Crema de Leche', category: 'Filipino Desserts', price: 40, description: "A creamy and sweet layered dessert.", sizes: [{name: 'Small', price: 40}, {name: 'Regular', price: 55}, {name: 'Large', price: 85}]},
     { id: 72, name: 'Mais con Yelo', category: 'Filipino Desserts', price: 40, description: "A classic Filipino dessert with sweet corn, shaved ice, and milk.", sizes: [{name: 'Small', price: 40}, {name: 'Regular', price: 55}, {name: 'Large', price: 85}]},
     { id: 73, name: 'Saging con Yelo', category: 'Filipino Desserts', price: 40, description: "A refreshing dessert with sweetened bananas (saba), shaved ice, and milk.", sizes: [{name: 'Small', price: 40}, {name: 'Regular', price: 55}, {name: 'Large', price: 85}]},
-    { id: 74, name: 'Manga Grahams', category: 'Filipino Desserts', price: 50, description: "A delicious no-bake dessert with layers of graham crackers, cream, and fresh mangoes.", sizes: [{name: 'Small', price: 50}, {name: 'Regular', price: 65}, {name: 'Large', price: 95}]},
+    { id: 74, name: 'Manga Grahams', category: 'Filipino Desserts', price: 50, description: "A delicious no-bake dessert with layers of graham crackers, cream, and fresh mangoes.", sizes: [{name: 'Small', price: 50}, {name: 'Regular', price: 80}, {name: 'Large', price: 120}]},
     { id: 75, name: 'Halo-halo Overload', category: 'Filipino Desserts', price: 40, description: "A classic Filipino shaved ice dessert with a mix of sweet beans, jellies, fruits, and topped with milk, leche flan, and ube.", sizes: [{name: 'Small', price: 40}, {name: 'Regular', price: 55}, {name: 'Large', price: 85}]},
   ],
 };
