@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { CartItem, Order } from '../types';
-import { useGeolocation } from '../hooks/useGeolocation';
-import { calculateDeliveryFee } from '../utils/location';
 import { CloseIcon } from './Icons';
+import { calculateDeliveryFee } from '../utils/location';
 
 interface CheckoutProps {
   cartItems: CartItem[];
@@ -12,13 +11,10 @@ interface CheckoutProps {
 
 
 const Checkout: React.FC<CheckoutProps> = ({ cartItems, onClose, userPosition }) => {
-  const { position: checkoutPosition, loading, error, getLocation } = useGeolocation();
   const [customerName, setCustomerName] = useState('');
   
-  const finalPosition = checkoutPosition || userPosition;
-  
   const subtotal = cartItems.reduce((acc, item) => acc + (item.selectedSize?.price || item.price) * item.quantity, 0);
-  const deliveryFee = calculateDeliveryFee(finalPosition);
+  const deliveryFee = calculateDeliveryFee(userPosition);
   const total = subtotal + deliveryFee;
 
   const saveOrderToDatabase = () => {
@@ -44,10 +40,6 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, onClose, userPosition })
 
 
   const handleSendOrder = () => {
-    if (!finalPosition) {
-      alert("Please pin your location before sending the order.");
-      return;
-    }
     if (!customerName.trim()) {
       alert("Please enter your name for verification.");
       return;
@@ -57,11 +49,19 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, onClose, userPosition })
         `${item.quantity}x ${item.name} ${item.selectedSize ? `(${item.selectedSize.name})` : ''} - ₱${((item.selectedSize?.price || item.price) * item.quantity).toFixed(2)}`
     ).join('\n');
 
+    let locationText = '';
+    if (userPosition) {
+      locationText = `
+*Delivery Location:*
+https://www.google.com/maps?q=${userPosition.latitude},${userPosition.longitude}
+      `;
+    }
+
     const message = `
 --- NEW ONLINE ORDER ---
 
 *Customer Name: ${customerName.trim()}*
-
+${locationText}
 ${orderItemsText}
 ------------------------------------
 Subtotal: ₱${subtotal.toFixed(2)}
@@ -69,10 +69,7 @@ Delivery Fee: ₱${deliveryFee.toFixed(2)}
 *TOTAL: ₱${total.toFixed(2)}*
 ------------------------------------
 
-*Delivery Location:*
-https://www.google.com/maps?q=${finalPosition.latitude},${finalPosition.longitude}
-
-(This is an automated order message. Please confirm receipt.)
+(This is an automated order message. Please confirm receipt and ask for delivery details.)
     `.trim().replace(/^\s+/gm, '');
 
     const encodedMessage = encodeURIComponent(message);
@@ -112,9 +109,11 @@ https://www.google.com/maps?q=${finalPosition.latitude},${finalPosition.longitud
                 <span>Subtotal:</span>
                 <span>₱{subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
                 <span>Delivery Fee:</span>
-                <span>{finalPosition ? `₱${deliveryFee.toFixed(2)}` : 'Set location'}</span>
+                <span className={userPosition ? '' : 'text-sm text-gray-500'}>
+                    {userPosition ? `₱${deliveryFee.toFixed(2)}` : 'Pin location for delivery'}
+                </span>
             </div>
             <div className="flex justify-between text-xl font-bold border-t pt-2 mt-2">
                 <span>Total:</span>
@@ -135,30 +134,13 @@ https://www.google.com/maps?q=${finalPosition.latitude},${finalPosition.longitud
             />
           </div>
 
-          <h3 className="text-lg font-semibold mb-2 mt-6">Delivery Location</h3>
-          <div className="bg-gray-100 p-4 rounded-lg">
-            {finalPosition ? (
-              <div className="text-green-700">
-                <p className="font-semibold">Location Pinned!</p>
-                <p className="text-xs">Lat: {finalPosition.latitude.toFixed(5)}, Lon: {finalPosition.longitude.toFixed(5)}</p>
-              </div>
-            ) : (
-              <p className="text-gray-600">
-                {loading ? 'Getting your location...' : 'Please pin your location for delivery.'}
-              </p>
-            )}
-            {error && <p className="text-red-500 mt-2">Error: {error.message}</p>}
-             <button onClick={getLocation} disabled={loading} className="mt-4 w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 disabled:bg-blue-300 transition-colors">
-              {loading ? 'Loading...' : 'Pin My Current Location'}
-            </button>
-          </div>
         </div>
 
         <div className="p-4 bg-gray-50 rounded-b-xl">
            <button 
              onClick={handleSendOrder}
              className="w-full bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 disabled:bg-green-300 transition-colors text-lg"
-             disabled={!finalPosition || loading || !customerName.trim()}
+             disabled={!customerName.trim()}
            >
              Send Order via Messenger
            </button>

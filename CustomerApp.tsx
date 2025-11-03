@@ -19,7 +19,7 @@ import {
   BowlIcon,
   FriesIcon,
   DessertIcon,
-  LocationPinIcon
+  LocationPinIcon,
 } from './components/Icons';
 
 const categoryIcons: { [key: string]: React.FC<{ className?: string }> } = {
@@ -95,6 +95,11 @@ const CustomerApp: React.FC = () => {
     setIsCheckoutOpen(false);
     setCartItems([]); // Clear cart after successful checkout simulation
   };
+
+  const handleLocationSave = (position: GeolocationCoordinates) => {
+    setUserPosition(position);
+    setIsLocationModalOpen(false);
+  };
   
   const handleAddToCartFromAssistant = (item: MenuItem, quantity: number) => {
     const defaultSize = item.sizes ? item.sizes[0] : undefined;
@@ -121,12 +126,13 @@ const CustomerApp: React.FC = () => {
               </a>
             </div>
           </div>
-          <div className="flex items-center">
-            <button onClick={() => setIsLocationModalOpen(true)} className="relative text-amber-800 hover:text-orange-600 p-2" aria-label="Set delivery location">
-                <LocationPinIcon className="h-8 w-8" />
-                {userPosition && (
-                    <span className="absolute top-1 right-1 bg-green-500 rounded-full h-3 w-3 border-2 border-white" title="Location is set"></span>
-                )}
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setIsLocationModalOpen(true)} 
+              className={`relative p-2 rounded-full transition-colors ${userPosition ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'text-amber-800 hover:text-orange-600'}`} 
+              aria-label="Set delivery location"
+            >
+              <LocationPinIcon className="h-8 w-8" />
             </button>
             <button onClick={() => setIsCartOpen(true)} className="relative text-amber-800 hover:text-orange-600 p-2" aria-label={`Open cart with ${cartItemCount} items`}>
               <CartIcon className="h-8 w-8" />
@@ -176,10 +182,10 @@ const CustomerApp: React.FC = () => {
         />
       )}
 
-      <LocationSettings 
+      <LocationSettings
         isOpen={isLocationModalOpen}
         onClose={() => setIsLocationModalOpen(false)}
-        onLocationSave={setUserPosition}
+        onLocationSave={handleLocationSave}
         currentPosition={userPosition}
       />
 
