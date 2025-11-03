@@ -31,4 +31,6 @@ export interface Order {
   deliveryFee: number;
   total: number;
   customerName: string;
+  deliveryTime?: string; // e.g., "ASAP" or a specific time like "14:30"
+  staffName?: string; // Who took the order
 }

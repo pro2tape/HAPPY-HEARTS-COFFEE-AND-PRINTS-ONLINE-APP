@@ -40,7 +40,9 @@ const SalesReport: React.FC = () => {
       'OrderID',
       'Date',
       'Time',
+      'DeliveryTime',
       'Customer Name',
+      'Staff Name',
       'Item Name',
       'Size',
       'Quantity',
@@ -56,7 +58,9 @@ const SalesReport: React.FC = () => {
         order.id,
         new Date(order.date).toLocaleDateString(),
         new Date(order.date).toLocaleTimeString(),
+        order.deliveryTime || 'ASAP',
         order.customerName.replace(/,/g, ''),
+        order.staffName || 'Online',
         item.name.replace(/,/g, ''), // remove commas to avoid csv issues
         item.selectedSize?.name || 'N/A',
         item.quantity,
@@ -122,7 +126,9 @@ const SalesReport: React.FC = () => {
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                 <th scope="col" className="relative px-6 py-3 non-printable"><span className="sr-only">Actions</span></th>
               </tr>
@@ -133,9 +139,11 @@ const SalesReport: React.FC = () => {
                   <tr key={order.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(order.date).toLocaleString()}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{order.customerName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.staffName || 'Online'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {order.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.deliveryTime || 'ASAP'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">₱{order.total.toFixed(2)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium non-printable">
                         <button
@@ -149,7 +157,7 @@ const SalesReport: React.FC = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">No orders found.</td>
+                  <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">No orders found.</td>
                 </tr>
               )}
             </tbody>

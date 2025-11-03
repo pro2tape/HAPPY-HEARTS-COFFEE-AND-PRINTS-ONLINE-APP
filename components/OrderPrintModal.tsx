@@ -18,6 +18,8 @@ const ReceiptContent: React.FC<{ order: Order; copyType: 'SHOP' | 'CUSTOMER' }> 
             <p><strong>Order ID:</strong> {order.id}</p>
             <p><strong>Customer:</strong> {order.customerName}</p>
             <p><strong>Date:</strong> {new Date(order.date).toLocaleString()}</p>
+            <p><strong>Time:</strong> {order.deliveryTime || 'ASAP'}</p>
+            {order.staffName && <p><strong>Staff:</strong> {order.staffName}</p>}
         </div>
 
         <hr className="my-3 border-dashed border-black" />

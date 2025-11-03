@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import CustomerApp from './CustomerApp';
 import Admin from './components/Admin';
 import AdminLogin from './components/AdminLogin';
+import StaffOrder from './components/StaffOrder';
+import StaffLogin from './components/StaffLogin';
+import StaffSignup from './components/StaffSignup';
 
 const App: React.FC = () => {
   const [route, setRoute] = useState(window.location.hash);
@@ -12,9 +15,7 @@ const App: React.FC = () => {
     };
 
     window.addEventListener('hashchange', handleHashChange);
-
-    // Initial check
-    handleHashChange();
+    handleHashChange(); // Initial check
 
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
@@ -22,22 +23,36 @@ const App: React.FC = () => {
   }, []);
 
   const renderRoute = () => {
-    const isAuthenticated = localStorage.getItem('isAdminAuthenticated') === 'true';
+    const isAdminAuthenticated = localStorage.getItem('isAdminAuthenticated') === 'true';
+    const isStaffAuthenticated = localStorage.getItem('isStaffAuthenticated') === 'true';
 
-    switch (route) {
-      case '#/admin':
-        if (isAuthenticated) {
-          return <Admin />;
-        }
-        // Redirect to login if not authenticated
-        window.location.hash = '#/admin/login';
-        return <AdminLogin />; // Show login while redirecting
-      case '#/admin/login':
-        return <AdminLogin />;
-      default:
-        // Any other hash or no hash will lead to the customer app
-        return <CustomerApp />;
+    // Staff routes
+    if (route.startsWith('#/staff')) {
+      if (route === '#/staff/login') return <StaffLogin />;
+      if (route === '#/staff/signup') return <StaffSignup />;
+      
+      if (isStaffAuthenticated) {
+        if (route === '#/staff') return <StaffOrder />;
+      }
+      // If not authenticated for a protected staff route, redirect to staff login
+      window.location.hash = '#/staff/login';
+      return <StaffLogin />;
     }
+
+    // Admin routes
+    if (route.startsWith('#/admin')) {
+      if (route === '#/admin/login') return <AdminLogin />;
+      
+      if (isAdminAuthenticated) {
+        if (route === '#/admin') return <Admin />;
+      }
+      // If not authenticated for a protected admin route, redirect to admin login
+      window.location.hash = '#/admin/login';
+      return <AdminLogin />;
+    }
+
+    // Default to customer app
+    return <CustomerApp />;
   };
 
   return renderRoute();

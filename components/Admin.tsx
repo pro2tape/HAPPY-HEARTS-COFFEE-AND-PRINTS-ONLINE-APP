@@ -36,6 +36,16 @@ const Admin: React.FC = () => {
       </header>
       <main className="container mx-auto p-4 sm:p-6 lg:p-8">
         <section className="bg-white p-6 rounded-lg shadow-md mb-8 non-printable">
+            <h2 className="text-xl font-semibold mb-4">Point of Sale</h2>
+            <a
+                href="#/staff"
+                className="inline-block w-full text-center bg-indigo-600 text-white font-bold py-4 px-6 rounded-lg hover:bg-indigo-700 transition-colors text-xl"
+            >
+                Take New Walk-in/Outdoor Order
+            </a>
+        </section>
+
+        <section className="bg-white p-6 rounded-lg shadow-md mb-8 non-printable">
           <h2 className="text-xl font-semibold mb-4">Order Management</h2>
           <a
             href="https://www.facebook.com/messages/t/61574616669270"
