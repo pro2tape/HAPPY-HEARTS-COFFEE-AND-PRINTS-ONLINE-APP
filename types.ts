@@ -30,4 +30,5 @@ export interface Order {
   subtotal: number;
   deliveryFee: number;
   total: number;
+  customerName: string;
 }

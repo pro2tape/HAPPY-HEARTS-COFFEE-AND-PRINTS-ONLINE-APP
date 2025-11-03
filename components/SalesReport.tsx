@@ -38,6 +38,7 @@ const SalesReport: React.FC = () => {
       'OrderID',
       'Date',
       'Time',
+      'Customer Name',
       'Item Name',
       'Size',
       'Quantity',
@@ -53,6 +54,7 @@ const SalesReport: React.FC = () => {
         order.id,
         new Date(order.date).toLocaleDateString(),
         new Date(order.date).toLocaleTimeString(),
+        order.customerName.replace(/,/g, ''),
         item.name.replace(/,/g, ''), // remove commas to avoid csv issues
         item.selectedSize?.name || 'N/A',
         item.quantity,
@@ -117,6 +119,7 @@ const SalesReport: React.FC = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
               </tr>
@@ -126,6 +129,7 @@ const SalesReport: React.FC = () => {
                 orders.slice().reverse().map(order => (
                   <tr key={order.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(order.date).toLocaleString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{order.customerName}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {order.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}
                     </td>
@@ -134,7 +138,7 @@ const SalesReport: React.FC = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={3} className="px-6 py-4 text-center text-sm text-gray-500">No orders found.</td>
+                  <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">No orders found.</td>
                 </tr>
               )}
             </tbody>

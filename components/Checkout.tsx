@@ -1,54 +1,24 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { CartItem, Order } from '../types';
 import { useGeolocation } from '../hooks/useGeolocation';
+import { calculateDeliveryFee } from '../utils/location';
 import { CloseIcon } from './Icons';
 
 interface CheckoutProps {
   cartItems: CartItem[];
   onClose: () => void;
+  userPosition: GeolocationCoordinates | null;
 }
 
-// Store's location (4C93+Q9X, Zarate St, San Fabian, Pangasinan)
-const STORE_LOCATION = { latitude: 16.1194375, longitude: 120.4034375 };
 
-// Haversine formula to calculate distance between two lat/lon points in km
-const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-  const R = 6371; // Radius of the Earth in km
-  const dLat = (lat2 - lat1) * (Math.PI / 180);
-  const dLon = (lon2 - lon1) * (Math.PI / 180);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * (Math.PI / 180)) *
-      Math.cos(lat2 * (Math.PI / 180)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; // Distance in km
-};
-
-
-const Checkout: React.FC<CheckoutProps> = ({ cartItems, onClose }) => {
-  const { position, loading, error, getLocation } = useGeolocation();
+const Checkout: React.FC<CheckoutProps> = ({ cartItems, onClose, userPosition }) => {
+  const { position: checkoutPosition, loading, error, getLocation } = useGeolocation();
+  const [customerName, setCustomerName] = useState('');
+  
+  const finalPosition = checkoutPosition || userPosition;
   
   const subtotal = cartItems.reduce((acc, item) => acc + (item.selectedSize?.price || item.price) * item.quantity, 0);
-
-  let deliveryFee = 0;
-  if (position) {
-      const distance = getDistance(
-          STORE_LOCATION.latitude,
-          STORE_LOCATION.longitude,
-          position.latitude,
-          position.longitude
-      );
-      // Delivery fee logic: P40 base fee for first 3km, then P10 for each additional km.
-      if (distance <= 3) {
-          deliveryFee = 40;
-      } else {
-          deliveryFee = 40 + Math.round((distance - 3) * 10);
-      }
-  }
-
+  const deliveryFee = calculateDeliveryFee(finalPosition);
   const total = subtotal + deliveryFee;
 
   const saveOrderToDatabase = () => {
@@ -59,6 +29,7 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, onClose }) => {
       subtotal,
       deliveryFee,
       total,
+      customerName,
     };
 
     try {
@@ -73,8 +44,12 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, onClose }) => {
 
 
   const handleSendOrder = () => {
-    if (!position) {
+    if (!finalPosition) {
       alert("Please pin your location before sending the order.");
+      return;
+    }
+    if (!customerName.trim()) {
+      alert("Please enter your name for verification.");
       return;
     }
 
@@ -85,6 +60,8 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, onClose }) => {
     const message = `
 --- NEW ONLINE ORDER ---
 
+*Customer Name: ${customerName.trim()}*
+
 ${orderItemsText}
 ------------------------------------
 Subtotal: ₱${subtotal.toFixed(2)}
@@ -93,7 +70,7 @@ Delivery Fee: ₱${deliveryFee.toFixed(2)}
 ------------------------------------
 
 *Delivery Location:*
-https://www.google.com/maps?q=${position.latitude},${position.longitude}
+https://www.google.com/maps?q=${finalPosition.latitude},${finalPosition.longitude}
 
 (This is an automated order message. Please confirm receipt.)
     `.trim().replace(/^\s+/gm, '');
@@ -137,7 +114,7 @@ https://www.google.com/maps?q=${position.latitude},${position.longitude}
             </div>
             <div className="flex justify-between">
                 <span>Delivery Fee:</span>
-                <span>{position ? `₱${deliveryFee.toFixed(2)}` : 'Set location'}</span>
+                <span>{finalPosition ? `₱${deliveryFee.toFixed(2)}` : 'Set location'}</span>
             </div>
             <div className="flex justify-between text-xl font-bold border-t pt-2 mt-2">
                 <span>Total:</span>
@@ -145,13 +122,25 @@ https://www.google.com/maps?q=${position.latitude},${position.longitude}
             </div>
           </div>
 
+          <div className="mt-6">
+            <label htmlFor="customerName" className="text-lg font-semibold mb-2 block">Your Name (for verification)</label>
+            <input
+              type="text"
+              id="customerName"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
+              placeholder="Juan Dela Cruz"
+              required
+            />
+          </div>
 
           <h3 className="text-lg font-semibold mb-2 mt-6">Delivery Location</h3>
           <div className="bg-gray-100 p-4 rounded-lg">
-            {position ? (
+            {finalPosition ? (
               <div className="text-green-700">
                 <p className="font-semibold">Location Pinned!</p>
-                <p className="text-xs">Lat: {position.latitude.toFixed(5)}, Lon: {position.longitude.toFixed(5)}</p>
+                <p className="text-xs">Lat: {finalPosition.latitude.toFixed(5)}, Lon: {finalPosition.longitude.toFixed(5)}</p>
               </div>
             ) : (
               <p className="text-gray-600">
@@ -169,7 +158,7 @@ https://www.google.com/maps?q=${position.latitude},${position.longitude}
            <button 
              onClick={handleSendOrder}
              className="w-full bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 disabled:bg-green-300 transition-colors text-lg"
-             disabled={!position || loading}
+             disabled={!finalPosition || loading || !customerName.trim()}
            >
              Send Order via Messenger
            </button>

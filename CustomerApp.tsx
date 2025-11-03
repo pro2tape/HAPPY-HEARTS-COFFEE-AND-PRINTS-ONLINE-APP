@@ -5,6 +5,7 @@ import MenuItemCard from './components/MenuItemCard';
 import Cart from './components/Cart';
 import Checkout from './components/Checkout';
 import GeminiAssistant from './components/GeminiAssistant';
+import LocationSettings from './components/LocationSettings';
 import { 
   CartIcon, 
   FacebookIcon, 
@@ -17,7 +18,8 @@ import {
   SandwichIcon,
   BowlIcon,
   FriesIcon,
-  DessertIcon
+  DessertIcon,
+  LocationPinIcon
 } from './components/Icons';
 
 const categoryIcons: { [key: string]: React.FC<{ className?: string }> } = {
@@ -42,6 +44,8 @@ const CustomerApp: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [userPosition, setUserPosition] = useState<GeolocationCoordinates | null>(null);
 
   const allMenuItems = useMemo(() => Object.values(menuData).flat(), []);
 
@@ -117,14 +121,22 @@ const CustomerApp: React.FC = () => {
               </a>
             </div>
           </div>
-          <button onClick={() => setIsCartOpen(true)} className="relative text-amber-800 hover:text-orange-600 p-2" aria-label={`Open cart with ${cartItemCount} items`}>
-            <CartIcon className="h-8 w-8" />
-            {cartItemCount > 0 && (
-              <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                {cartItemCount}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center">
+            <button onClick={() => setIsLocationModalOpen(true)} className="relative text-amber-800 hover:text-orange-600 p-2" aria-label="Set delivery location">
+                <LocationPinIcon className="h-8 w-8" />
+                {userPosition && (
+                    <span className="absolute top-1 right-1 bg-green-500 rounded-full h-3 w-3 border-2 border-white" title="Location is set"></span>
+                )}
+            </button>
+            <button onClick={() => setIsCartOpen(true)} className="relative text-amber-800 hover:text-orange-600 p-2" aria-label={`Open cart with ${cartItemCount} items`}>
+              <CartIcon className="h-8 w-8" />
+              {cartItemCount > 0 && (
+                <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {cartItemCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -160,8 +172,16 @@ const CustomerApp: React.FC = () => {
         <Checkout 
             cartItems={cartItems}
             onClose={handleCloseCheckout}
+            userPosition={userPosition}
         />
       )}
+
+      <LocationSettings 
+        isOpen={isLocationModalOpen}
+        onClose={() => setIsLocationModalOpen(false)}
+        onLocationSave={setUserPosition}
+        currentPosition={userPosition}
+      />
 
       <GeminiAssistant menuItems={allMenuItems} onAddToCart={handleAddToCartFromAssistant} />
     </div>
