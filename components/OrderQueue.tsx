@@ -1,10 +1,112 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Order } from '../types';
 import OrderPrintModal from './OrderPrintModal';
-import { PrintIcon } from './Icons';
+import { PrintIcon, QrCodeIcon, CloseIcon } from './Icons';
 
 // A simple notification sound
 const notificationSound = new Audio("data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaW5nIMKlIE5ld3NmbGFzaC5jb20Arg==");
+
+
+const QrScannerModal: React.FC<{ onClose: () => void; onScan: (data: string) => void }> = ({ onClose, onScan }) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    // FIX: Initialize useRef with null to avoid argument error and handle potential race conditions.
+    const requestRef = useRef<number | null>(null);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        const scriptId = 'jsqr-script';
+        let stream: MediaStream | null = null;
+
+        const cleanup = () => {
+            // FIX: Check against null to correctly handle request ID 0.
+            if (requestRef.current !== null) {
+                cancelAnimationFrame(requestRef.current);
+            }
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        };
+
+        const tick = () => {
+            if (videoRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
+                if (canvasRef.current) {
+                    const canvas = canvasRef.current;
+                    const video = videoRef.current;
+                    canvas.height = video.videoHeight;
+                    canvas.width = video.videoWidth;
+                    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+                    // @ts-ignore - jsQR is loaded from a script
+                    if (ctx && window.jsQR) {
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        // @ts-ignore
+                        const code = window.jsQR(imageData.data, imageData.width, imageData.height);
+                        
+                        if (code) {
+                            onScan(code.data);
+                            cleanup();
+                            onClose();
+                            return; // Stop the loop
+                        }
+                    }
+                }
+            }
+            requestRef.current = requestAnimationFrame(tick);
+        };
+
+        const startScan = () => {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(s => {
+                    stream = s;
+                    if (videoRef.current) {
+                        videoRef.current.srcObject = stream;
+                        videoRef.current.play();
+                        requestRef.current = requestAnimationFrame(tick);
+                    }
+                })
+                .catch(err => {
+                    console.error("Camera access error:", err);
+                    setError('Could not access camera. Please check permissions.');
+                });
+        };
+
+        // @ts-ignore
+        if (window.jsQR) {
+            startScan();
+        } else {
+            const script = document.createElement('script');
+            script.id = scriptId;
+            script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
+            script.async = true;
+            document.body.appendChild(script);
+            script.onload = startScan;
+        }
+
+        return cleanup;
+    }, [onClose, onScan]);
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg relative">
+                <button onClick={onClose} className="absolute top-2 right-2 text-white bg-black bg-opacity-50 rounded-full p-1 z-10">
+                    <CloseIcon className="h-6 w-6" />
+                </button>
+                <div className="aspect-video relative">
+                    <video ref={videoRef} className="w-full h-full object-cover rounded-t-xl" playsInline />
+                    <canvas ref={canvasRef} className="hidden" />
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-64 h-64 border-4 border-dashed border-white/80 rounded-lg"></div>
+                    </div>
+                </div>
+                <div className="p-4 text-center">
+                    {error ? <p className="text-red-500 font-semibold">{error}</p> : <p className="text-gray-700 font-semibold">Point camera at an order QR code</p>}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 
 const OrderCard: React.FC<{ order: Order; onUpdateStatus: (id: string, status: Order['status']) => void; onPrint: (order: Order) => void; onCancel: (id: string) => void; }> = ({ order, onUpdateStatus, onPrint, onCancel }) => {
     const timeSince = (date: string) => {
@@ -66,6 +168,7 @@ const OrderCard: React.FC<{ order: Order; onUpdateStatus: (id: string, status: O
 const OrderQueue: React.FC = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
     const prevOrderCount = useRef(0);
     const backLink = window.location.hash.includes('#/staff') ? '#/staff' : '#/admin';
 
@@ -115,6 +218,17 @@ const OrderQueue: React.FC = () => {
         }
     };
 
+    const handleScan = (orderId: string) => {
+      const storedOrdersRaw = localStorage.getItem('orders');
+      const storedOrders: Order[] = storedOrdersRaw ? JSON.parse(storedOrdersRaw) : [];
+      const foundOrder = storedOrders.find(o => o.id === orderId);
+      if (foundOrder) {
+        setSelectedOrder(foundOrder); // This will open the OrderPrintModal
+      } else {
+        alert(`Order with ID ${orderId} not found.`);
+      }
+    };
+
     const { newOrders, inProgressOrders, completedOrders } = useMemo(() => {
         const today = new Date().toDateString();
         return {
@@ -129,8 +243,19 @@ const OrderQueue: React.FC = () => {
         <div className="bg-gray-100 min-h-screen font-sans">
              <header className="bg-gray-800 text-white shadow-md sticky top-0 z-20">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
-                    <h1 className="text-2xl font-bold">Live Order Queue</h1>
-                    <a href={backLink} className="text-sm text-gray-300 hover:underline font-semibold">&larr; Back to Dashboard</a>
+                    <div className="flex-1">
+                        <h1 className="text-2xl font-bold">Live Order Queue</h1>
+                    </div>
+                    <div className="flex items-center gap-4">
+                       <button
+                         onClick={() => setIsScannerOpen(true)}
+                         className="flex items-center gap-2 bg-sky-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-sky-700 transition-colors"
+                       >
+                         <QrCodeIcon className="w-5 h-5" />
+                         Scan Order
+                       </button>
+                       <a href={backLink} className="text-sm text-gray-300 hover:underline font-semibold whitespace-nowrap">&larr; Back to Dashboard</a>
+                    </div>
                 </div>
             </header>
             <main className="container mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -183,6 +308,12 @@ const OrderQueue: React.FC = () => {
                 <OrderPrintModal
                     order={selectedOrder}
                     onClose={() => setSelectedOrder(null)}
+                />
+            )}
+            {isScannerOpen && (
+                <QrScannerModal
+                    onClose={() => setIsScannerOpen(false)}
+                    onScan={handleScan}
                 />
             )}
         </div>

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { CartItem, MenuItem } from './types';
+import { CartItem, MenuItem, Order } from './types';
 import { menuData } from './data/menuData';
 import MenuItemCard from './components/MenuItemCard';
 import Cart from './components/Cart';
@@ -42,10 +42,38 @@ const categoryIcons: { [key: string]: React.FC<{ className?: string }> } = {
   "Filipino Desserts": DessertIcon,
 };
 
+const OrderConfirmationModal: React.FC<{ order: Order; onClose: () => void }> = ({ order, onClose }) => {
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(order.id)}`;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm text-center">
+        <div className="p-6">
+          <h2 className="text-2xl font-bold text-green-600 mb-2">Order Placed!</h2>
+          <p className="text-gray-600 mb-4">Thank you! Your order is being prepared. Please show this QR code at the counter for verification.</p>
+          <div className="flex justify-center my-4">
+            <img src={qrCodeUrl} alt="Order QR Code" width="200" height="200" />
+          </div>
+          <p className="text-sm text-gray-500">Order ID: <span className="font-mono">{order.id}</span></p>
+        </div>
+        <div className="p-4 bg-gray-50 rounded-b-xl">
+           <button 
+             onClick={onClose}
+             className="w-full bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600 transition-colors text-lg"
+           >
+             Done
+           </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const CustomerApp: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [userPosition, setUserPosition] = useState<GeolocationCoordinates | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>(Object.keys(menuData)[0].replace(/\s+/g, '-').replace(/&/g, 'and'));
@@ -127,9 +155,10 @@ const CustomerApp: React.FC = () => {
     setIsCheckoutOpen(true);
   };
 
-  const handleCloseCheckout = () => {
+  const handleCheckoutSuccess = (order: Order) => {
     setIsCheckoutOpen(false);
-    setCartItems([]); // Clear cart after successful checkout simulation
+    setCartItems([]); // Clear cart
+    setCompletedOrder(order); // Show confirmation modal
   };
 
   const handleLocationSave = (position: GeolocationCoordinates) => {
@@ -306,8 +335,16 @@ const CustomerApp: React.FC = () => {
       {isCheckoutOpen && (
         <Checkout 
             cartItems={cartItems}
-            onClose={handleCloseCheckout}
+            onClose={() => setIsCheckoutOpen(false)}
+            onSuccess={handleCheckoutSuccess}
             userPosition={userPosition}
+        />
+      )}
+
+      {completedOrder && (
+        <OrderConfirmationModal 
+            order={completedOrder}
+            onClose={() => setCompletedOrder(null)}
         />
       )}
 

@@ -6,18 +6,19 @@ import { calculateDeliveryFee } from '../utils/location';
 interface CheckoutProps {
   cartItems: CartItem[];
   onClose: () => void;
+  onSuccess: (order: Order) => void;
   userPosition: GeolocationCoordinates | null;
 }
 
 
-const Checkout: React.FC<CheckoutProps> = ({ cartItems, onClose, userPosition }) => {
+const Checkout: React.FC<CheckoutProps> = ({ cartItems, onClose, onSuccess, userPosition }) => {
   const [customerName, setCustomerName] = useState('');
   
   const subtotal = cartItems.reduce((acc, item) => acc + (item.selectedSize?.price || item.price) * item.quantity, 0);
   const deliveryFee = calculateDeliveryFee(userPosition);
   const total = subtotal + deliveryFee;
 
-  const saveOrderToDatabase = () => {
+  const saveOrderToDatabase = (): Order => {
     const newOrder: Order = {
       id: Date.now().toString(),
       date: new Date().toISOString(),
@@ -37,6 +38,7 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, onClose, userPosition })
     } catch (e) {
       console.error("Failed to save order:", e);
     }
+    return newOrder;
   };
 
 
@@ -46,10 +48,8 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, onClose, userPosition })
       return;
     }
 
-    saveOrderToDatabase();
-
-    alert("Order placed successfully! We'll start preparing it right away.");
-    onClose();
+    const newOrder = saveOrderToDatabase();
+    onSuccess(newOrder);
   };
   
   return (
