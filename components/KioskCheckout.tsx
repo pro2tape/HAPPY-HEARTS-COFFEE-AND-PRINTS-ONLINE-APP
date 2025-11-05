@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { CartItem, Order } from '../types';
 import { CloseIcon } from './Icons';
 import { generateNewOrderId } from '../utils/order';
@@ -10,20 +10,19 @@ interface KioskCheckoutProps {
 }
 
 const KioskCheckout: React.FC<KioskCheckoutProps> = ({ cartItems, onClose, onSuccess }) => {
-  const [customerName, setCustomerName] = useState('');
-  
   const subtotal = cartItems.reduce((acc, item) => acc + (item.selectedSize?.price || item.price) * item.quantity, 0);
   const total = subtotal;
 
   const saveOrderToDatabase = (): Order => {
+    const newOrderId = generateNewOrderId();
     const newOrder: Order = {
-      id: generateNewOrderId(),
+      id: newOrderId,
       date: new Date().toISOString(),
       items: cartItems,
       subtotal,
       deliveryFee: 0,
       total,
-      customerName: customerName.trim() || 'Kiosk Customer',
+      customerName: `Kiosk Order #${newOrderId}`,
       status: 'new',
       staffName: 'Kiosk',
     };
@@ -40,10 +39,6 @@ const KioskCheckout: React.FC<KioskCheckoutProps> = ({ cartItems, onClose, onSuc
   };
 
   const handlePlaceOrder = () => {
-    if (!customerName.trim()) {
-      alert("Please enter a name for your order.");
-      return;
-    }
     const newOrder = saveOrderToDatabase();
     onSuccess(newOrder);
   };
@@ -76,18 +71,6 @@ const KioskCheckout: React.FC<KioskCheckoutProps> = ({ cartItems, onClose, onSuc
             </div>
           </div>
 
-          <div className="mt-8">
-            <label htmlFor="customerName" className="text-2xl font-semibold mb-3 block">Your Name (for this order)</label>
-            <input
-              type="text"
-              id="customerName"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              className="w-full p-4 border-2 rounded-lg text-2xl focus:ring-4 focus:ring-amber-500 focus:outline-none"
-              placeholder="e.g., Juan"
-              required
-            />
-          </div>
         </div>
 
         <div className="p-6 bg-gray-50 rounded-b-2xl grid grid-cols-2 gap-4">
@@ -99,8 +82,7 @@ const KioskCheckout: React.FC<KioskCheckoutProps> = ({ cartItems, onClose, onSuc
            </button>
            <button 
              onClick={handlePlaceOrder}
-             className="w-full bg-green-500 text-white font-bold py-4 rounded-lg hover:bg-green-600 disabled:bg-green-300 transition-colors text-2xl"
-             disabled={!customerName.trim()}
+             className="w-full bg-green-500 text-white font-bold py-4 rounded-lg hover:bg-green-600 transition-colors text-2xl"
            >
              Confirm & Pay at Counter
            </button>

@@ -18,8 +18,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   // Staff accounts state
   const [staffAccounts, setStaffAccounts] = useState<StaffAccount[]>([]);
 
-  // Staff link copy state
-  const [isCopied, setIsCopied] = useState(false);
+  // Link copy states
+  const [isStaffLinkCopied, setIsStaffLinkCopied] = useState(false);
+  const [isKioskLinkCopied, setIsKioskLinkCopied] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -79,14 +80,22 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   };
 
   const staffLink = `${window.location.origin}${window.location.pathname.replace(/index\.html$/, '')}#/staff/login`;
+  const kioskLink = `${window.location.origin}${window.location.pathname.replace(/index\.html$/, '')}#/kiosk`;
   const customerLink = `${window.location.origin}${window.location.pathname.replace(/index\.html$/, '')}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(customerLink)}`;
 
 
-  const handleCopyLink = () => {
+  const handleCopyStaffLink = () => {
     navigator.clipboard.writeText(staffLink).then(() => {
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2500);
+        setIsStaffLinkCopied(true);
+        setTimeout(() => setIsStaffLinkCopied(false), 2500);
+    });
+  };
+
+  const handleCopyKioskLink = () => {
+    navigator.clipboard.writeText(kioskLink).then(() => {
+        setIsKioskLinkCopied(true);
+        setTimeout(() => setIsKioskLinkCopied(false), 2500);
     });
   };
 
@@ -167,14 +176,38 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                     className="w-full p-2 border rounded-lg bg-gray-100 text-gray-700 focus:outline-none"
                 />
                 <button
-                    onClick={handleCopyLink}
+                    onClick={handleCopyStaffLink}
                     className={`flex items-center gap-2 justify-center w-32 font-bold py-2 px-4 rounded-lg transition-colors ${
-                        isCopied 
+                        isStaffLinkCopied 
                         ? 'bg-green-600 text-white' 
                         : 'bg-slate-600 text-white hover:bg-slate-700'
                     }`}
                 >
-                    {isCopied ? 'Copied!' : <><CopyIcon className="w-5 h-5" /> Copy</>}
+                    {isStaffLinkCopied ? 'Copied!' : <><CopyIcon className="w-5 h-5" /> Copy</>}
+                </button>
+            </div>
+          </div>
+
+          {/* Kiosk Access Link Section */}
+          <div className="pt-6 border-t">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Kiosk App Link</h3>
+            <p className="text-sm text-gray-600 mb-4">Share this link to open the self-service kiosk ordering system on a dedicated device.</p>
+            <div className="flex gap-2">
+                <input
+                    type="text"
+                    readOnly
+                    value={kioskLink}
+                    className="w-full p-2 border rounded-lg bg-gray-100 text-gray-700 focus:outline-none"
+                />
+                <button
+                    onClick={handleCopyKioskLink}
+                    className={`flex items-center gap-2 justify-center w-32 font-bold py-2 px-4 rounded-lg transition-colors ${
+                        isKioskLinkCopied 
+                        ? 'bg-green-600 text-white' 
+                        : 'bg-slate-600 text-white hover:bg-slate-700'
+                    }`}
+                >
+                    {isKioskLinkCopied ? 'Copied!' : <><CopyIcon className="w-5 h-5" /> Copy</>}
                 </button>
             </div>
           </div>
