@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
 import { CartItem, Order } from '../types';
 import { CloseIcon } from './Icons';
+import { generateNewOrderId } from '../utils/order';
 
 interface StaffCheckoutProps {
   cartItems: CartItem[];
@@ -21,7 +23,7 @@ const StaffCheckout: React.FC<StaffCheckoutProps> = ({ cartItems, onClose, staff
     const deliveryTime = orderTimeType === 'now' ? 'ASAP' : scheduledTime;
 
     const newOrder: Order = {
-      id: Date.now().toString(),
+      id: generateNewOrderId(),
       date: new Date().toISOString(),
       items: cartItems,
       subtotal,

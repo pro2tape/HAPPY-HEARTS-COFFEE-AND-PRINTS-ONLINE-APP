@@ -1,7 +1,9 @@
+
 import React, { useState } from 'react';
 import { CartItem, Order } from '../types';
 import { CloseIcon } from './Icons';
 import { calculateDeliveryFee } from '../utils/location';
+import { generateNewOrderId } from '../utils/order';
 
 interface CheckoutProps {
   cartItems: CartItem[];
@@ -20,7 +22,7 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, onClose, onSuccess, user
 
   const saveOrderToDatabase = (): Order => {
     const newOrder: Order = {
-      id: Date.now().toString(),
+      id: generateNewOrderId(),
       date: new Date().toISOString(),
       items: cartItems,
       subtotal,
