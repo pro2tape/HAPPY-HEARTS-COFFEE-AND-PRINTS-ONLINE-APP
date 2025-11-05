@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CloseIcon, CopyIcon, TrashIcon } from './Icons';
+import { CloseIcon, CopyIcon, TrashIcon, PrintIcon } from './Icons';
 import { StaffAccount } from '../types';
 
 interface SettingsModalProps {
@@ -79,6 +79,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   };
 
   const staffLink = `${window.location.origin}${window.location.pathname.replace(/index\.html$/, '')}#/staff/login`;
+  const customerLink = `${window.location.origin}${window.location.pathname.replace(/index\.html$/, '')}`;
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(customerLink)}`;
+
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(staffLink).then(() => {
@@ -86,6 +89,22 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
         setTimeout(() => setIsCopied(false), 2500);
     });
   };
+
+  const handlePrintQrCode = () => {
+    const printContents = document.getElementById('printable-qr-code')?.innerHTML;
+    const originalContents = document.body.innerHTML;
+    if (printContents) {
+        document.body.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif;">
+                ${printContents}
+            </div>
+        `;
+        window.print();
+        document.body.innerHTML = originalContents;
+        window.location.reload();
+    }
+  };
+
 
   if (!isOpen) return null;
 
@@ -159,6 +178,27 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                 </button>
             </div>
           </div>
+
+          {/* Dine-in QR Code Section */}
+          <div className="pt-6 border-t">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Dine-in Customer QR Code</h3>
+            <p className="text-sm text-gray-600 mb-4">Print this QR code and display it on tables. Customers can scan it to open the menu and place their order directly from their phone.</p>
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+                <div id="printable-qr-code" className="text-center p-4 border rounded-lg">
+                    <img src={qrCodeUrl} alt="Dine-in Order QR Code" width="200" height="200" className="mx-auto" />
+                    <p className="font-bold text-lg mt-2">Scan to Order</p>
+                    <p className="text-sm text-gray-600">Happy Hearts Coffee & Prints</p>
+                </div>
+                <button
+                    onClick={handlePrintQrCode}
+                    className="flex items-center gap-2 justify-center font-bold py-2 px-4 rounded-lg bg-slate-600 text-white hover:bg-slate-700 transition-colors"
+                >
+                    <PrintIcon className="w-5 h-5" />
+                    Print QR Code
+                </button>
+            </div>
+          </div>
+
 
           {/* Staff Accounts Section */}
           <div className="pt-6 border-t">
