@@ -20,6 +20,8 @@ import {
   FriesIcon,
   DessertIcon,
   LocationPinIcon,
+  ChevronDoubleLeftIcon,
+  ChevronDownIcon,
 } from './components/Icons';
 
 const categoryIcons: { [key: string]: React.FC<{ className?: string }> } = {
@@ -47,6 +49,8 @@ const CustomerApp: React.FC = () => {
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [userPosition, setUserPosition] = useState<GeolocationCoordinates | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>(Object.keys(menuData)[0].replace(/\s+/g, '-').replace(/&/g, 'and'));
+  const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const categoryRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const allMenuItems = useMemo(() => Object.values(menuData).flat(), []);
@@ -65,12 +69,17 @@ const CustomerApp: React.FC = () => {
 
     const refs = Object.values(categoryRefs.current);
     refs.forEach((ref) => {
-      if (ref) observer.observe(ref);
+      if (ref instanceof HTMLElement) {
+        observer.observe(ref);
+      }
     });
 
     return () => {
+      const refs = Object.values(categoryRefs.current);
       refs.forEach((ref) => {
-        if (ref) observer.unobserve(ref);
+        if (ref instanceof HTMLElement) {
+          observer.unobserve(ref);
+        }
       });
     };
   }, []);
@@ -139,18 +148,27 @@ const CustomerApp: React.FC = () => {
     <div className="bg-amber-50 min-h-screen font-sans">
       <header className="bg-white shadow-md sticky top-0 z-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
-          <div className="flex items-center gap-4">
-            <div className="text-center sm:text-left">
-              <h1 className="text-3xl font-extrabold text-amber-900 tracking-tight">Happy Hearts</h1>
-              <p className="text-sm text-orange-600 font-semibold">Coffee & Prints</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <a href="https://www.facebook.com/profile.php?id=61574616669270" target="_blank" rel="noopener noreferrer" aria-label="Facebook Page" className="text-amber-800 hover:text-orange-600 transition-colors">
-                <FacebookIcon className="h-6 w-6" />
-              </a>
-              <a href="https://www.instagram.com/happyhearts_coffee_prints" target="_blank" rel="noopener noreferrer" aria-label="Instagram Profile" className="text-amber-800 hover:text-orange-600 transition-colors">
-                <InstagramIcon className="h-6 w-6" />
-              </a>
+          <div className="flex items-center gap-2">
+            <button 
+                onClick={() => setIsMenuCollapsed(!isMenuCollapsed)} 
+                className="hidden lg:inline-flex p-2 rounded-full hover:bg-amber-100 transition-colors"
+                aria-label="Toggle menu"
+            >
+                <ChevronDoubleLeftIcon className={`w-6 h-6 text-amber-800 transition-transform duration-300 ${isMenuCollapsed ? 'rotate-180' : ''}`} />
+            </button>
+            <div className="flex items-center gap-4">
+                <div className="text-center sm:text-left">
+                <h1 className="text-3xl font-extrabold text-amber-900 tracking-tight">Happy Hearts</h1>
+                <p className="text-sm text-orange-600 font-semibold">Coffee & Prints</p>
+                </div>
+                <div className="flex items-center gap-3">
+                <a href="https://www.facebook.com/profile.php?id=61574616669270" target="_blank" rel="noopener noreferrer" aria-label="Facebook Page" className="text-amber-800 hover:text-orange-600 transition-colors">
+                    <FacebookIcon className="h-6 w-6" />
+                </a>
+                <a href="https://www.instagram.com/happyhearts_coffee_prints" target="_blank" rel="noopener noreferrer" aria-label="Instagram Profile" className="text-amber-800 hover:text-orange-600 transition-colors">
+                    <InstagramIcon className="h-6 w-6" />
+                </a>
+                </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -175,12 +193,13 @@ const CustomerApp: React.FC = () => {
 
       <div className="container mx-auto lg:flex lg:gap-8">
          {/* Left Sidebar - Desktop */}
-        <aside className="hidden lg:block w-64 py-8 sticky top-[88px] self-start max-h-[calc(100vh-88px)] overflow-y-auto">
+        <aside className={`hidden lg:block py-8 sticky top-[88px] self-start max-h-[calc(100vh-88px)] overflow-y-auto transition-all duration-300 ${isMenuCollapsed ? 'w-24' : 'w-64'}`}>
           <nav>
-            <h3 className="text-xl font-bold text-amber-900 mb-4 px-3">Menu Categories</h3>
-            <ul className="space-y-1">
+            <h3 className={`text-xl font-bold text-amber-900 mb-4 px-3 whitespace-nowrap overflow-hidden transition-opacity ${isMenuCollapsed ? 'opacity-0 h-0' : 'opacity-100'}`}>Menu Categories</h3>
+            <ul className="space-y-1 px-3">
               {Object.keys(menuData).map(category => {
                 const categoryId = category.replace(/\s+/g, '-').replace(/&/g, 'and');
+                const IconComponent = categoryIcons[category];
                 return (
                   <li key={category}>
                     <a
@@ -190,13 +209,15 @@ const CustomerApp: React.FC = () => {
                         document.getElementById(categoryId)?.scrollIntoView({ behavior: 'smooth' });
                         setActiveCategory(categoryId);
                       }}
-                      className={`block w-full text-left p-3 rounded-lg font-semibold transition-colors ${
+                      className={`flex items-center gap-4 w-full text-left p-3 rounded-lg font-semibold transition-colors ${
                         activeCategory === categoryId
                           ? 'bg-orange-500 text-white'
                           : 'text-amber-800 hover:bg-amber-100'
-                      }`}
+                      } ${isMenuCollapsed ? 'justify-center' : ''}`}
+                      title={category}
                     >
-                      {category}
+                      {IconComponent && <IconComponent className="h-6 w-6 flex-shrink-0" />}
+                      <span className={`whitespace-nowrap ${isMenuCollapsed ? 'sr-only' : 'block'}`}>{category}</span>
                     </a>
                   </li>
                 );
@@ -208,27 +229,43 @@ const CustomerApp: React.FC = () => {
         <main className="flex-1 py-4 sm:py-6 lg:py-8 px-4 sm:px-6 lg:px-0">
             {/* Top Category Nav - Mobile */}
             <div className="lg:hidden mb-6 sticky top-[88px] bg-amber-50/90 backdrop-blur-sm py-2 z-10 -mx-4 px-4">
-                <div className="grid grid-cols-3 gap-2">
-                {Object.keys(menuData).map(category => {
-                    const categoryId = category.replace(/\s+/g, '-').replace(/&/g, 'and');
-                    return (
-                        <a
-                        key={category}
-                        href={`#${categoryId}`}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            document.getElementById(categoryId)?.scrollIntoView({ behavior: 'smooth' });
-                        }}
-                        className={`px-3 py-2 rounded-lg font-semibold text-sm transition-colors flex items-center justify-center text-center ${
-                            activeCategory === categoryId
-                            ? 'bg-orange-500 text-white shadow-md'
-                            : 'bg-white text-amber-800 shadow-sm'
-                        }`}
-                        >
-                        {category}
-                        </a>
-                    );
-                })}
+                <button
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="w-full flex justify-between items-center p-3 bg-white rounded-lg shadow-sm"
+                    aria-expanded={isMobileMenuOpen}
+                >
+                    <span className="font-bold text-amber-800">Menu Categories</span>
+                    <ChevronDownIcon className={`w-6 h-6 text-amber-800 transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+                <div className={`grid overflow-hidden transition-all duration-500 ease-in-out ${isMobileMenuOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0] opacity-0'}`}>
+                    <div className="min-h-0">
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 pt-2">
+                        {Object.keys(menuData).map(category => {
+                            const categoryId = category.replace(/\s+/g, '-').replace(/&/g, 'and');
+                            const IconComponent = categoryIcons[category];
+                            return (
+                                <a
+                                key={category}
+                                href={`#${categoryId}`}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    document.getElementById(categoryId)?.scrollIntoView({ behavior: 'smooth' });
+                                    setActiveCategory(categoryId);
+                                    setIsMobileMenuOpen(false);
+                                }}
+                                className={`flex flex-col items-center justify-center p-2 rounded-lg text-center font-semibold text-xs transition-colors h-20 ${
+                                    activeCategory === categoryId
+                                    ? 'bg-orange-500 text-white shadow-md'
+                                    : 'bg-white text-amber-800 shadow-sm'
+                                }`}
+                                >
+                                {IconComponent && <IconComponent className="h-8 w-8 mb-1" />}
+                                <span className="leading-tight">{category}</span>
+                                </a>
+                            );
+                        })}
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -239,7 +276,6 @@ const CustomerApp: React.FC = () => {
                 <section 
                     key={category} 
                     id={categoryId}
-                    // FIX: The ref callback should not return a value. Wrapped in curly braces to ensure an implicit return of undefined.
                     ref={el => {categoryRefs.current[categoryId] = el}}
                     className="mb-12 scroll-mt-32"
                 >

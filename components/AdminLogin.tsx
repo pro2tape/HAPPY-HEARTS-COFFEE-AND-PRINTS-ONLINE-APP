@@ -1,18 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const AdminLogin: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    // On first load, check if an admin account exists. If not, create a default one.
+    const adminCreds = localStorage.getItem('adminCredentials');
+    if (!adminCreds) {
+      const defaultAdmin = { username: 'admin', password: 'password' };
+      localStorage.setItem('adminCredentials', JSON.stringify(defaultAdmin));
+    }
+  }, []);
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real application, this would be an API call.
-    // For this example, we use hardcoded credentials.
-    if (username === 'admin' && password === 'password') {
+    const adminCredsRaw = localStorage.getItem('adminCredentials');
+    if (!adminCredsRaw) {
+        setError('Admin account not found. Please contact support.');
+        return;
+    }
+    const adminCreds = JSON.parse(adminCredsRaw);
+
+    if (username === adminCreds.username && password === adminCreds.password) {
       localStorage.setItem('isAdminAuthenticated', 'true');
       window.location.hash = '#/admin';
-      window.location.reload(); // Force a re-render of the router
+      window.location.reload();
     } else {
       setError('Invalid username or password');
       localStorage.removeItem('isAdminAuthenticated');

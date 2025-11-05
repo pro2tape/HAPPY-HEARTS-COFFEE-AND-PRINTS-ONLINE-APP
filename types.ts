@@ -34,3 +34,14 @@ export interface Order {
   deliveryTime?: string; // e.g., "ASAP" or a specific time like "14:30"
   staffName?: string; // Who took the order
 }
+
+export interface TimeLog {
+  staffName: string;
+  timestamp: string; // ISO string for date and time
+  type: 'in' | 'out';
+}
+
+export interface StaffAccount {
+  username: string;
+  password?: string;
+}

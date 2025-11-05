@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { CartItem, MenuItem } from '../types';
+import { CartItem, MenuItem, TimeLog } from '../types';
 import { menuData } from '../data/menuData';
 import MenuItemCard from './MenuItemCard';
 import Cart from './Cart';
@@ -40,11 +40,18 @@ const StaffOrder: React.FC = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [staffName, setStaffName] = useState('');
+  const [isTimedIn, setIsTimedIn] = useState(false);
 
   useEffect(() => {
     const user = localStorage.getItem('currentStaffUser');
     if (user) {
         setStaffName(user);
+        const timeLogsRaw = localStorage.getItem('staffTimeLogs');
+        const timeLogs: TimeLog[] = timeLogsRaw ? JSON.parse(timeLogsRaw) : [];
+        const lastUserLog = timeLogs.filter(log => log.staffName === user).pop();
+        if (lastUserLog && lastUserLog.type === 'in') {
+            setIsTimedIn(true);
+        }
     }
   }, []);
 
@@ -54,6 +61,31 @@ const StaffOrder: React.FC = () => {
     window.location.hash = '#/staff/login';
   };
 
+  const handleTimeIn = () => {
+    const timeLogsRaw = localStorage.getItem('staffTimeLogs');
+    const timeLogs: TimeLog[] = timeLogsRaw ? JSON.parse(timeLogsRaw) : [];
+    const newLog: TimeLog = {
+        staffName,
+        timestamp: new Date().toISOString(),
+        type: 'in',
+    };
+    localStorage.setItem('staffTimeLogs', JSON.stringify([...timeLogs, newLog]));
+    setIsTimedIn(true);
+    alert('You have successfully timed in.');
+  };
+
+  const handleTimeOut = () => {
+      const timeLogsRaw = localStorage.getItem('staffTimeLogs');
+      const timeLogs: TimeLog[] = timeLogsRaw ? JSON.parse(timeLogsRaw) : [];
+      const newLog: TimeLog = {
+          staffName,
+          timestamp: new Date().toISOString(),
+          type: 'out',
+      };
+      localStorage.setItem('staffTimeLogs', JSON.stringify([...timeLogs, newLog]));
+      setIsTimedIn(false);
+      alert('You have successfully timed out.');
+  };
 
   const addToCart = (itemToAdd: MenuItem, quantity: number, selectedSize?: { name: string; price: number }) => {
     const cartId = selectedSize ? `${itemToAdd.id}-${selectedSize.name}` : `${itemToAdd.id}`;
@@ -105,18 +137,18 @@ const StaffOrder: React.FC = () => {
   const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <div className="bg-gray-200 min-h-screen font-sans">
-      <header className="bg-white shadow-md sticky top-0 z-20">
+    <div className="bg-stone-100 min-h-screen font-sans">
+      <header className="bg-teal-700 text-white shadow-md sticky top-0 z-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
           <div className="flex-grow">
-            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800 tracking-tight">Staff Order Entry</h1>
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">Staff Order Entry</h1>
              <div className="flex items-center gap-4">
-                <p className="text-sm text-gray-600">Welcome, <span className="font-semibold">{staffName}</span>!</p>
-                <a href="#/admin" className="text-sm text-blue-600 hover:underline font-semibold">&larr; Back to Admin Dashboard</a>
+                <p className="text-sm text-teal-100">Welcome, <span className="font-semibold">{staffName}</span>!</p>
+                <a href="#/admin" className="text-sm text-white hover:underline font-semibold">&larr; Back to Admin Dashboard</a>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <button onClick={() => setIsCartOpen(true)} className="relative text-gray-700 hover:text-blue-600 p-2" aria-label={`Open cart with ${cartItemCount} items`}>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setIsCartOpen(true)} className="relative text-white hover:text-teal-200 p-2" aria-label={`Open cart with ${cartItemCount} items`}>
               <CartIcon className="h-8 w-8" />
               {cartItemCount > 0 && (
                 <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -124,7 +156,16 @@ const StaffOrder: React.FC = () => {
                 </span>
               )}
             </button>
-             <button onClick={handleLogout} className="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition-colors text-sm">
+            {!isTimedIn ? (
+              <button onClick={handleTimeIn} className="bg-green-500 text-white font-bold py-2 px-3 rounded-lg hover:bg-green-600 transition-colors text-sm whitespace-nowrap">
+                  Time In
+              </button>
+            ) : (
+                <button onClick={handleTimeOut} className="bg-yellow-500 text-white font-bold py-2 px-3 rounded-lg hover:bg-yellow-600 transition-colors text-sm whitespace-nowrap">
+                    Time Out
+                </button>
+            )}
+            <button onClick={handleLogout} className="bg-rose-500 text-white font-bold py-2 px-3 rounded-lg hover:bg-rose-600 transition-colors text-sm">
                 Logout
             </button>
           </div>
@@ -136,9 +177,9 @@ const StaffOrder: React.FC = () => {
             const IconComponent = categoryIcons[category];
             return (
               <section key={category} className="mb-12">
-                <div className="flex items-center gap-4 mb-6 border-b-4 border-gray-400 pb-2">
-                  {IconComponent && <IconComponent className="h-10 w-10 text-gray-700" />}
-                  <h2 className="text-4xl font-bold text-gray-700 tracking-tight">{category}</h2>
+                <div className="flex items-center gap-4 mb-6 border-b-4 border-teal-500 pb-2">
+                  {IconComponent && <IconComponent className="h-10 w-10 text-teal-700" />}
+                  <h2 className="text-4xl font-bold text-teal-800 tracking-tight">{category}</h2>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                   {items.map(item => (
