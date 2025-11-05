@@ -6,7 +6,7 @@ import { PrintIcon } from './Icons';
 // A simple notification sound
 const notificationSound = new Audio("data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaW5nIMKlIE5ld3NmbGFzaC5jb20Arg==");
 
-const OrderCard: React.FC<{ order: Order; onUpdateStatus: (id: string, status: Order['status']) => void; onPrint: (order: Order) => void; }> = ({ order, onUpdateStatus, onPrint }) => {
+const OrderCard: React.FC<{ order: Order; onUpdateStatus: (id: string, status: Order['status']) => void; onPrint: (order: Order) => void; onCancel: (id: string) => void; }> = ({ order, onUpdateStatus, onPrint, onCancel }) => {
     const timeSince = (date: string) => {
         const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
         let interval = seconds / 31536000;
@@ -49,6 +49,9 @@ const OrderCard: React.FC<{ order: Order; onUpdateStatus: (id: string, status: O
                     )}
                     {order.status === 'in-progress' && (
                         <button onClick={() => onUpdateStatus(order.id, 'completed')} className="bg-blue-500 text-white font-bold py-1 px-3 rounded-full text-sm hover:bg-blue-600">Complete</button>
+                    )}
+                    {(order.status === 'new' || order.status === 'in-progress') && (
+                        <button onClick={() => onCancel(order.id)} className="bg-red-500 text-white font-bold py-1 px-3 rounded-full text-sm hover:bg-red-600">Cancel</button>
                     )}
                 </div>
                 <button onClick={() => onPrint(order)} className="p-2 text-gray-500 hover:bg-gray-200 rounded-full">
@@ -102,6 +105,16 @@ const OrderQueue: React.FC = () => {
         loadOrders(); // Manually trigger reload for the current tab
     };
 
+    const handleCancelOrder = (orderId: string) => {
+        if (window.confirm('Are you sure you want to cancel and remove this order? This action cannot be undone.')) {
+            const storedOrdersRaw = localStorage.getItem('orders');
+            const storedOrders: Order[] = storedOrdersRaw ? JSON.parse(storedOrdersRaw) : [];
+            const updatedOrders = storedOrders.filter(o => o.id !== orderId);
+            localStorage.setItem('orders', JSON.stringify(updatedOrders));
+            loadOrders(); // Manually trigger reload for the current tab
+        }
+    };
+
     const { newOrders, inProgressOrders, completedOrders } = useMemo(() => {
         const today = new Date().toDateString();
         return {
@@ -127,7 +140,7 @@ const OrderQueue: React.FC = () => {
                         New Orders ({newOrders.length})
                     </h2>
                     <div className="max-h-[calc(100vh-150px)] overflow-y-auto">
-                        {newOrders.map(order => <OrderCard key={order.id} order={order} onUpdateStatus={handleUpdateStatus} onPrint={setSelectedOrder} />)}
+                        {newOrders.map(order => <OrderCard key={order.id} order={order} onUpdateStatus={handleUpdateStatus} onPrint={setSelectedOrder} onCancel={handleCancelOrder} />)}
                     </div>
                 </div>
 
@@ -137,7 +150,7 @@ const OrderQueue: React.FC = () => {
                         In Progress ({inProgressOrders.length})
                     </h2>
                      <div className="max-h-[calc(100vh-150px)] overflow-y-auto">
-                        {inProgressOrders.map(order => <OrderCard key={order.id} order={order} onUpdateStatus={handleUpdateStatus} onPrint={setSelectedOrder} />)}
+                        {inProgressOrders.map(order => <OrderCard key={order.id} order={order} onUpdateStatus={handleUpdateStatus} onPrint={setSelectedOrder} onCancel={handleCancelOrder} />)}
                     </div>
                 </div>
 
