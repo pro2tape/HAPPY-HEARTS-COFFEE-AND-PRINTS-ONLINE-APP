@@ -6,6 +6,7 @@ import StaffOrder from './components/StaffOrder';
 import StaffLogin from './components/StaffLogin';
 import StaffSignup from './components/StaffSignup';
 import OrderQueue from './components/OrderQueue';
+import KioskApp from './KioskApp';
 
 const App: React.FC = () => {
   const [route, setRoute] = useState(window.location.hash);
@@ -26,6 +27,11 @@ const App: React.FC = () => {
   const renderRoute = () => {
     const isAdminAuthenticated = localStorage.getItem('isAdminAuthenticated') === 'true';
     const isStaffAuthenticated = localStorage.getItem('isStaffAuthenticated') === 'true';
+
+    // Kiosk route
+    if (route === '#/kiosk') {
+      return <KioskApp />;
+    }
 
     // Staff routes
     if (route.startsWith('#/staff')) {

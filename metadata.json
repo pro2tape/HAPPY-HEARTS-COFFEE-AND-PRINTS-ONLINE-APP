@@ -2,7 +2,6 @@
   "name": "Happy Hearts Coffee & Prints Ordering App",
   "description": "An online ordering platform for Happy Hearts Coffee & Prints. Browse the menu, get AI-powered recommendations with Gemini, and pin your location for delivery.",
   "requestFramePermissions": [
-    "geolocation",
-    "camera"
+    "geolocation"
   ]
 }
