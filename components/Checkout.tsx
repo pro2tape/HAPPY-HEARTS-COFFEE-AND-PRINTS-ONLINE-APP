@@ -26,6 +26,7 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, onClose, userPosition })
       deliveryFee,
       total,
       customerName,
+      status: 'new',
     };
 
     try {
@@ -45,41 +46,9 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, onClose, userPosition })
       return;
     }
 
-    const orderItemsText = cartItems.map(item => 
-        `${item.quantity}x ${item.name} ${item.selectedSize ? `(${item.selectedSize.name})` : ''} - ₱${((item.selectedSize?.price || item.price) * item.quantity).toFixed(2)}`
-    ).join('\n');
-
-    let locationText = '';
-    if (userPosition) {
-      locationText = `
-*Delivery Location:*
-https://www.google.com/maps?q=${userPosition.latitude},${userPosition.longitude}
-      `;
-    }
-
-    const message = `
---- NEW ONLINE ORDER ---
-
-*Customer Name: ${customerName.trim()}*
-${locationText}
-${orderItemsText}
-------------------------------------
-Subtotal: ₱${subtotal.toFixed(2)}
-Delivery Fee: ₱${deliveryFee.toFixed(2)}
-*TOTAL: ₱${total.toFixed(2)}*
-------------------------------------
-
-(This is an automated order message. Please confirm receipt and ask for delivery details.)
-    `.trim().replace(/^\s+/gm, '');
-
-    const encodedMessage = encodeURIComponent(message);
-    const facebookPageId = '61574616669270'; 
-    const messengerUrl = `https://m.me/${facebookPageId}?text=${encodedMessage}`;
-    
     saveOrderToDatabase();
 
-    window.open(messengerUrl, '_blank');
-    alert("Your order is ready to be sent! Please click 'Send' in the new Messenger tab that just opened.");
+    alert("Order placed successfully! We'll start preparing it right away.");
     onClose();
   };
   
@@ -142,7 +111,7 @@ Delivery Fee: ₱${deliveryFee.toFixed(2)}
              className="w-full bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 disabled:bg-green-300 transition-colors text-lg"
              disabled={!customerName.trim()}
            >
-             Send Order via Messenger
+             Place Order
            </button>
         </div>
       </div>

@@ -62,14 +62,12 @@ const Admin: React.FC = () => {
           <section className="bg-white p-6 rounded-lg shadow-md mb-8 non-printable border border-slate-200">
             <h2 className="text-xl font-semibold text-slate-700 mb-4">Order Management</h2>
             <a
-              href="https://www.facebook.com/messages/t/61574616669270"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#/admin/orders"
               className="inline-block w-full text-center bg-sky-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-sky-700 transition-colors text-lg"
             >
-              View Incoming Orders on Messenger
+              View Live Order Queue
             </a>
-            <p className="text-sm text-gray-500 mt-2">New orders from customers will appear in your Facebook Page's inbox.</p>
+            <p className="text-sm text-gray-500 mt-2">New orders from customers will appear here in real-time.</p>
           </section>
 
           <SalesReport />

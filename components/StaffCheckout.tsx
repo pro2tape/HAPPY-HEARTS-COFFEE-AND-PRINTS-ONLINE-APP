@@ -30,6 +30,7 @@ const StaffCheckout: React.FC<StaffCheckoutProps> = ({ cartItems, onClose, staff
       customerName: customerIdentifier.trim() || 'Walk-in', // Use identifier as customer name
       deliveryTime,
       staffName,
+      status: 'new',
     };
 
     try {
@@ -52,35 +53,8 @@ const StaffCheckout: React.FC<StaffCheckoutProps> = ({ cartItems, onClose, staff
         return;
     }
 
-    const deliveryTimeText = orderTimeType === 'now' ? 'ASAP' : scheduledTime;
-
-    const orderItemsText = cartItems.map(item => 
-        `${item.quantity}x ${item.name} ${item.selectedSize ? `(${item.selectedSize.name})` : ''} - ₱${((item.selectedSize?.price || item.price) * item.quantity).toFixed(2)}`
-    ).join('\n');
-
-    const message = `
---- NEW STAFF-ENTERED ORDER ---
-
-*Taken by: ${staffName}*
-*Customer/Table: ${customerIdentifier.trim()}*
-*Order Time: ${deliveryTimeText}*
-
-${orderItemsText}
-------------------------------------
-*TOTAL: ₱${total.toFixed(2)}*
-------------------------------------
-
-(This is a staff-entered order. Please prepare.)
-    `.trim().replace(/^\s+/gm, '');
-
-    const encodedMessage = encodeURIComponent(message);
-    const facebookPageId = '61574616669270'; 
-    const messengerUrl = `https://m.me/${facebookPageId}?text=${encodedMessage}`;
-    
     saveOrderToDatabase();
-
-    window.open(messengerUrl, '_blank');
-    alert("The order is ready to be sent! Please click 'Send' in the new Messenger tab that just opened.");
+    alert("Order successfully sent to the kitchen!");
     onClose();
   };
   

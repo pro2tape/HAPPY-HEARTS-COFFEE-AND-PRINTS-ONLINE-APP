@@ -14,7 +14,8 @@ import {
   SandwichIcon,
   BowlIcon,
   FriesIcon,
-  DessertIcon
+  DessertIcon,
+  ClipboardListIcon
 } from './Icons';
 
 const categoryIcons: { [key: string]: React.FC<{ className?: string }> } = {
@@ -148,6 +149,10 @@ const StaffOrder: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <a href="#/staff/orders" className="flex items-center gap-1 text-white hover:text-teal-200 p-2 font-semibold text-sm" title="View Live Orders">
+                <ClipboardListIcon className="w-6 h-6" />
+                <span className="hidden md:inline">View Orders</span>
+            </a>
             <button onClick={() => setIsCartOpen(true)} className="relative text-white hover:text-teal-200 p-2" aria-label={`Open cart with ${cartItemCount} items`}>
               <CartIcon className="h-8 w-8" />
               {cartItemCount > 0 && (

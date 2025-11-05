@@ -33,6 +33,7 @@ export interface Order {
   customerName: string;
   deliveryTime?: string; // e.g., "ASAP" or a specific time like "14:30"
   staffName?: string; // Who took the order
+  status: 'new' | 'in-progress' | 'completed';
 }
 
 export interface TimeLog {
