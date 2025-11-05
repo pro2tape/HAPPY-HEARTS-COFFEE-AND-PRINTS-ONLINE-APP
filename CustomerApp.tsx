@@ -43,18 +43,16 @@ const categoryIcons: { [key: string]: React.FC<{ className?: string }> } = {
 };
 
 const OrderConfirmationModal: React.FC<{ order: Order; onClose: () => void }> = ({ order, onClose }) => {
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(order.id)}`;
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm text-center">
         <div className="p-6">
           <h2 className="text-2xl font-bold text-green-600 mb-2">Order Placed!</h2>
-          <p className="text-gray-600 mb-4">Thank you! Your order is being prepared. Please show this QR code at the counter for verification.</p>
-          <div className="flex justify-center my-4">
-            <img src={qrCodeUrl} alt="Order QR Code" width="200" height="200" />
+          <p className="text-gray-600 mb-4">Thank you! Your order is being prepared. Please show this order number at the counter for verification.</p>
+          <div className="bg-gray-100 rounded-lg p-4 my-6">
+            <p className="text-sm text-gray-500 mb-1">Your Order Number</p>
+            <p className="text-4xl font-bold font-mono text-amber-900 tracking-wider">{order.id}</p>
           </div>
-          <p className="text-sm text-gray-500">Order ID: <span className="font-mono">{order.id}</span></p>
         </div>
         <div className="p-4 bg-gray-50 rounded-b-xl">
            <button 
