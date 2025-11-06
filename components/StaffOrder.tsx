@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { CartItem, MenuItem, TimeLog } from '../types';
+import { CartItem, MenuItem, TimeLog, Order } from '../types';
 import { menuData } from '../data/menuData';
 import MenuItemCard from './MenuItemCard';
 import Cart from './Cart';
 import StaffCheckout from './StaffCheckout';
+import StaffOrderConfirmationModal from './StaffOrderConfirmationModal';
 import { 
   CartIcon, 
   BurgerIcon,
@@ -42,6 +43,7 @@ const StaffOrder: React.FC = () => {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [staffName, setStaffName] = useState('');
   const [isTimedIn, setIsTimedIn] = useState(false);
+  const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     const user = localStorage.getItem('currentStaffUser');
@@ -130,9 +132,14 @@ const StaffOrder: React.FC = () => {
     setIsCheckoutOpen(true);
   };
 
-  const handleCloseCheckout = () => {
+  const handleCancelCheckout = () => {
+    setIsCheckoutOpen(false);
+  };
+  
+  const handleCheckoutSuccess = (order: Order) => {
     setIsCheckoutOpen(false);
     setCartItems([]);
+    setCompletedOrder(order);
   };
   
   const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
@@ -208,8 +215,16 @@ const StaffOrder: React.FC = () => {
       {isCheckoutOpen && (
         <StaffCheckout 
             cartItems={cartItems}
-            onClose={handleCloseCheckout}
+            onCancel={handleCancelCheckout}
+            onSuccess={handleCheckoutSuccess}
             staffName={staffName}
+        />
+      )}
+
+      {completedOrder && (
+        <StaffOrderConfirmationModal 
+            order={completedOrder}
+            onClose={() => setCompletedOrder(null)}
         />
       )}
     </div>

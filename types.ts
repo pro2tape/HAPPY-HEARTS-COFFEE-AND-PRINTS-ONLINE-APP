@@ -34,6 +34,9 @@ export interface Order {
   deliveryTime?: string; // e.g., "ASAP" or a specific time like "14:30"
   staffName?: string; // Who took the order
   status: 'new' | 'in-progress' | 'completed';
+  isMessengerDelivery?: boolean;
+  messengerName?: string;
+  messengerContact?: string;
 }
 
 export interface TimeLog {

@@ -43,6 +43,9 @@ const SalesReport: React.FC = () => {
       'DeliveryTime',
       'Customer Name',
       'Staff Name',
+      'OrderType',
+      'MessengerName',
+      'MessengerContact',
       'Item Name',
       'Size',
       'Quantity',
@@ -61,6 +64,9 @@ const SalesReport: React.FC = () => {
         order.deliveryTime || 'ASAP',
         order.customerName.replace(/,/g, ''),
         order.staffName || 'Online',
+        order.isMessengerDelivery ? 'Messenger' : (order.staffName ? 'Walk-in' : 'Online'),
+        order.messengerName || '',
+        order.messengerContact || '',
         item.name.replace(/,/g, ''), // remove commas to avoid csv issues
         item.selectedSize?.name || 'N/A',
         item.quantity,
@@ -126,7 +132,7 @@ const SalesReport: React.FC = () => {
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
@@ -139,7 +145,9 @@ const SalesReport: React.FC = () => {
                   <tr key={order.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(order.date).toLocaleString()}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{order.customerName}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.staffName || 'Online'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {order.isMessengerDelivery ? 'Messenger' : (order.staffName ? 'Walk-in' : 'Online')}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {order.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}
                     </td>

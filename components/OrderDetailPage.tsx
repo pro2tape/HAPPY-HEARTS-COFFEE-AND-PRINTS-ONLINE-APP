@@ -57,6 +57,17 @@ const OrderDetailPage: React.FC = () => {
                     <p className="text-lg font-bold mb-2">For: {order.customerName}</p>
                     <p className="text-lg font-bold mb-4">Time: {order.deliveryTime || 'ASAP'}</p>
 
+                     {order.isMessengerDelivery && (
+                        <>
+                            <hr className="my-3 border-dashed border-black" />
+                             <div className="text-lg space-y-1">
+                                <p className="font-bold uppercase">Delivery Details</p>
+                                <p><strong>Service:</strong> {order.messengerName}</p>
+                                <p><strong>Contact:</strong> {order.messengerContact}</p>
+                            </div>
+                        </>
+                    )}
+
                     <hr className="my-3 border-dashed border-black" />
 
                     <ul className="space-y-2">
@@ -75,6 +86,7 @@ const OrderDetailPage: React.FC = () => {
                     <hr className="my-3 border-dashed border-black" />
                     
                     <div className="text-right">
+                        {order.deliveryFee > 0 && <p className="font-semibold text-lg">Delivery: ₱{order.deliveryFee.toFixed(2)}</p>}
                         <p className="font-bold text-2xl">TOTAL: ₱{order.total.toFixed(2)}</p>
                     </div>
                 </div>

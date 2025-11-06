@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Order } from '../types';
 import OrderPrintModal from './OrderPrintModal';
-import { PrintIcon, CloseIcon, CopyIcon } from './Icons';
+import { PrintIcon, CloseIcon, CopyIcon, MotorcycleIcon } from './Icons';
 
 // A simple notification sound
 const notificationSound = new Audio("data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaW5nIMKlIE5ld3NmbGFzaC5jb20Arg==");
@@ -33,8 +33,16 @@ const OrderCard: React.FC<{ order: Order; onUpdateStatus: (id: string, status: O
         });
     };
 
+    const borderColor = order.isMessengerDelivery ? 'border-purple-500' : 'border-blue-500';
+
     return (
-        <div className="bg-white rounded-lg shadow-md p-4 mb-4 border-l-4 border-blue-500">
+        <div className={`bg-white rounded-lg shadow-md p-4 mb-4 border-l-4 ${borderColor}`}>
+            {order.isMessengerDelivery && (
+                <div className="flex items-center gap-2 text-purple-700 mb-2">
+                    <MotorcycleIcon className="w-5 h-5" />
+                    <p className="font-bold text-sm">Messenger Delivery</p>
+                </div>
+            )}
             <div className="flex justify-between items-start">
                 <div>
                     <p className="font-bold text-lg text-gray-800">{order.customerName}</p>

@@ -22,6 +22,17 @@ const ReceiptContent: React.FC<{ order: Order; copyType: 'SHOP' | 'CUSTOMER' }> 
             {order.staffName && <p><strong>Staff:</strong> {order.staffName}</p>}
         </div>
 
+        {order.isMessengerDelivery && (
+            <>
+                <hr className="my-3 border-dashed border-black" />
+                <div className="text-sm space-y-1">
+                    <p className="font-bold">DELIVERY DETAILS</p>
+                    <p><strong>Service:</strong> {order.messengerName}</p>
+                    <p><strong>Contact:</strong> {order.messengerContact}</p>
+                </div>
+            </>
+        )}
+
         <hr className="my-3 border-dashed border-black" />
 
         <table className="w-full text-sm">
