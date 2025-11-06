@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Order } from '../types';
 import OrderPrintModal from './OrderPrintModal';
-import { PrintIcon, CloseIcon } from './Icons';
+import { PrintIcon, CloseIcon, CopyIcon } from './Icons';
 
 // A simple notification sound
 const notificationSound = new Audio("data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaW5nIMKlIE5ld3NmbGFzaC5jb20Arg==");
 
 const OrderCard: React.FC<{ order: Order; onUpdateStatus: (id: string, status: Order['status']) => void; onPrint: (order: Order) => void; onCancel: (id: string) => void; }> = ({ order, onUpdateStatus, onPrint, onCancel }) => {
+    const [isLinkCopied, setIsLinkCopied] = useState(false);
+    
     const timeSince = (date: string) => {
         const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
         let interval = seconds / 31536000;
@@ -22,12 +24,24 @@ const OrderCard: React.FC<{ order: Order; onUpdateStatus: (id: string, status: O
         return Math.floor(seconds) + " seconds ago";
     };
 
+    const orderLink = `${window.location.origin}${window.location.pathname.replace(/index\.html$/, '')}#/order/${order.id}`;
+
+    const handleCopyLink = () => {
+        navigator.clipboard.writeText(orderLink).then(() => {
+            setIsLinkCopied(true);
+            setTimeout(() => setIsLinkCopied(false), 2000);
+        });
+    };
+
     return (
         <div className="bg-white rounded-lg shadow-md p-4 mb-4 border-l-4 border-blue-500">
             <div className="flex justify-between items-start">
                 <div>
                     <p className="font-bold text-lg text-gray-800">{order.customerName}</p>
-                    <p className="text-sm text-gray-500">#{order.id.slice(-6)} &bull; {timeSince(order.date)}</p>
+                    <a href={`#/order/${order.id}`} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">
+                        Order #{order.id}
+                    </a>
+                    <p className="text-sm text-gray-500">{timeSince(order.date)}</p>
                 </div>
                 <div className="text-right">
                      <p className="font-bold text-xl text-gray-900">₱{order.total.toFixed(2)}</p>
@@ -54,9 +68,15 @@ const OrderCard: React.FC<{ order: Order; onUpdateStatus: (id: string, status: O
                         <button onClick={() => onCancel(order.id)} className="bg-red-500 text-white font-bold py-1 px-3 rounded-full text-sm hover:bg-red-600">Cancel</button>
                     )}
                 </div>
-                <button onClick={() => onPrint(order)} className="p-2 text-gray-500 hover:bg-gray-200 rounded-full">
-                    <PrintIcon className="w-5 h-5"/>
-                </button>
+                <div className="flex items-center gap-1">
+                    <button onClick={handleCopyLink} className="p-2 text-gray-500 hover:bg-gray-200 rounded-full relative" title="Copy order link">
+                        <CopyIcon className="w-5 h-5"/>
+                        {isLinkCopied && <span className="absolute -top-6 -right-2 bg-black text-white text-xs rounded px-1">Copied!</span>}
+                    </button>
+                    <button onClick={() => onPrint(order)} className="p-2 text-gray-500 hover:bg-gray-200 rounded-full" title="Print receipt">
+                        <PrintIcon className="w-5 h-5"/>
+                    </button>
+                </div>
              </div>
         </div>
     );

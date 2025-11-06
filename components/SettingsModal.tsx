@@ -78,6 +78,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
       localStorage.setItem('staffAccounts', JSON.stringify(updatedAccounts));
     }
   };
+  
+  const handleResetOrderCounter = () => {
+    if (window.confirm('Are you sure you want to reset the daily order counter? This will start the order numbers from 1 again. This is typically done at the start of a new day.')) {
+        localStorage.setItem('lastOrderId', '0');
+        alert('Order counter has been reset successfully.');
+    }
+  };
 
   const staffLink = `${window.location.origin}${window.location.pathname.replace(/index\.html$/, '')}#/staff/login`;
   const kioskLink = `${window.location.origin}${window.location.pathname.replace(/index\.html$/, '')}#/kiosk`;
@@ -228,6 +235,25 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                 >
                     <PrintIcon className="w-5 h-5" />
                     Print QR Code
+                </button>
+            </div>
+          </div>
+
+          {/* System Actions Section */}
+          <div className="pt-6 border-t">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">System Actions</h3>
+            <div className="flex items-center gap-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex-grow">
+                    <p className="font-semibold text-red-800">Reset Daily Order Counter</p>
+                    <p className="text-sm text-red-700">
+                        This resets the order ID back to 1. Best used at the start of each business day to keep order numbers small and manageable.
+                    </p>
+                </div>
+                <button
+                    onClick={handleResetOrderCounter}
+                    className="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors flex-shrink-0"
+                >
+                    Reset Now
                 </button>
             </div>
           </div>

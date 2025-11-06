@@ -7,6 +7,7 @@ import StaffLogin from './components/StaffLogin';
 import StaffSignup from './components/StaffSignup';
 import OrderQueue from './components/OrderQueue';
 import KioskApp from './KioskApp';
+import OrderDetailPage from './components/OrderDetailPage';
 
 const App: React.FC = () => {
   const [route, setRoute] = useState(window.location.hash);
@@ -27,6 +28,16 @@ const App: React.FC = () => {
   const renderRoute = () => {
     const isAdminAuthenticated = localStorage.getItem('isAdminAuthenticated') === 'true';
     const isStaffAuthenticated = localStorage.getItem('isStaffAuthenticated') === 'true';
+
+    // Special route for viewing a single order, accessible by staff and admin
+    if (route.startsWith('#/order/')) {
+        if (isAdminAuthenticated || isStaffAuthenticated) {
+            return <OrderDetailPage />;
+        }
+        // If not authenticated, redirect to a login page. Admin login is a safe default.
+        window.location.hash = '#/admin/login';
+        return <AdminLogin />;
+    }
 
     // Kiosk route
     if (route === '#/kiosk') {

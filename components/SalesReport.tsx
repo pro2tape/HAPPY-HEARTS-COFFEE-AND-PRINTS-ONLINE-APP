@@ -146,11 +146,14 @@ const SalesReport: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.deliveryTime || 'ASAP'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">₱{order.total.toFixed(2)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium non-printable">
+                        <a href={`#/order/${order.id}`} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:text-sky-900 font-semibold mr-4">
+                            View Slip
+                        </a>
                         <button
                             onClick={() => setSelectedOrder(order)}
                             className="text-indigo-600 hover:text-indigo-900 font-semibold"
                         >
-                            View &amp; Print
+                            Print Receipt
                         </button>
                     </td>
                   </tr>
