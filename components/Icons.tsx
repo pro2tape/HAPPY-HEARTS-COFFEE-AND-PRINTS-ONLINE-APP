@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 export const CartIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -147,5 +148,11 @@ export const MotorcycleIcon: React.FC<{ className?: string }> = ({ className }) 
 export const MessengerIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
         <path d="M12 0C5.373 0 0 4.974 0 11.111c0 3.498 1.744 6.615 4.456 8.641.11.077.222.154.333.231.256.18.522.359.79.513.333.205.675.385 1.026.538.128.051.256.103.385.154.41.18.82.333 1.256.462.128.025.256.051.385.077.487.128 1 .231 1.513.308.051 0 .103.025.154.025.513.077 1.026.128 1.539.154h.025c.487.025.974.025 1.462 0h.025c.513-.025 1.026-.077 1.539-.154.051 0 .103-.025.154-.025.513-.077 1.026-.18 1.513-.308.128-.025.256-.051.385-.077.436-.128.846-.282 1.256-.462.128-.051.256-.103.385-.154.359-.154.701-.333 1.026-.538.282-.154.538-.333.79-.513.111-.077.222-.154.333-.231C22.256 17.726 24 14.61 24 11.111 24 4.974 18.627 0 12 0zm1.141 14.026L8.205 9.077l6.308-4.051-4.936 6.41zm-2.282 0l4.936-6.41-6.308 4.051 1.372 2.359z"/>
+    </svg>
+);
+
+export const LockIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
     </svg>
 );

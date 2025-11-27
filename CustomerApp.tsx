@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { CartItem, MenuItem, Order } from './types';
 import { menuData } from './data/menuData';
@@ -22,6 +23,7 @@ import {
   LocationPinIcon,
   ChevronDoubleLeftIcon,
   ChevronDownIcon,
+  LockIcon,
 } from './components/Icons';
 
 const categoryIcons: { [key: string]: React.FC<{ className?: string }> } = {
@@ -172,7 +174,7 @@ const CustomerApp: React.FC = () => {
   const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <div className="bg-amber-50 min-h-screen font-sans">
+    <div className="bg-amber-50 min-h-screen font-sans flex flex-col">
       <header className="bg-white shadow-md sticky top-0 z-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
           <div className="flex items-center gap-2">
@@ -199,6 +201,9 @@ const CustomerApp: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <a href="#/admin" className="text-amber-800 hover:text-orange-600 p-2" aria-label="Admin Access">
+                <LockIcon className="h-6 w-6" />
+            </a>
             <button 
               onClick={() => setIsLocationModalOpen(true)} 
               className={`relative p-2 rounded-full transition-colors ${userPosition ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'text-amber-800 hover:text-orange-600'}`} 
@@ -218,7 +223,7 @@ const CustomerApp: React.FC = () => {
         </div>
       </header>
 
-      <div className="container mx-auto lg:flex lg:gap-8">
+      <div className="container mx-auto lg:flex lg:gap-8 flex-1">
          {/* Left Sidebar - Desktop */}
         <aside className={`hidden lg:block py-8 sticky top-[88px] self-start max-h-[calc(100vh-88px)] overflow-y-auto transition-all duration-300 ${isMenuCollapsed ? 'w-24' : 'w-64'}`}>
           <nav>
@@ -320,6 +325,22 @@ const CustomerApp: React.FC = () => {
             })}
         </main>
       </div>
+
+      <footer className="bg-gray-800 text-gray-300 py-8 mt-12">
+          <div className="container mx-auto px-4 text-center">
+             <p className="mb-4">© {new Date().getFullYear()} Happy Hearts Coffee & Prints. All rights reserved.</p>
+             <div className="flex justify-center gap-6 text-sm">
+                <a href="#/admin" className="flex items-center gap-1 hover:text-white transition-colors">
+                    <LockIcon className="w-4 h-4" />
+                    Admin Access
+                </a>
+                <a href="#/staff/login" className="flex items-center gap-1 hover:text-white transition-colors">
+                    <LockIcon className="w-4 h-4" />
+                    Staff Access
+                </a>
+             </div>
+          </div>
+      </footer>
 
       <Cart 
         isOpen={isCartOpen}
