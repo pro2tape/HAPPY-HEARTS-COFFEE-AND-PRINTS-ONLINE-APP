@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { CartItem, MenuItem, Order } from './types';
-import { menuData } from './data/menuData';
+import { useMenuData } from './hooks/useMenuData';
 import MenuItemCard from './components/MenuItemCard';
 import Cart from './components/Cart';
 import Checkout from './components/Checkout';
@@ -24,6 +24,7 @@ import {
   ChevronDoubleLeftIcon,
   ChevronDownIcon,
   LockIcon,
+  MonitorIcon
 } from './components/Icons';
 
 const categoryIcons: { [key: string]: React.FC<{ className?: string }> } = {
@@ -70,18 +71,26 @@ const OrderConfirmationModal: React.FC<{ order: Order; onClose: () => void }> = 
 };
 
 const CustomerApp: React.FC = () => {
+  const menuData = useMenuData();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [userPosition, setUserPosition] = useState<GeolocationCoordinates | null>(null);
-  const [activeCategory, setActiveCategory] = useState<string>(Object.keys(menuData)[0].replace(/\s+/g, '-').replace(/&/g, 'and'));
+  // Default to first category if available, else empty string
+  const [activeCategory, setActiveCategory] = useState<string>('');
   const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const categoryRefs = useRef<Record<string, HTMLElement | null>>({});
 
-  const allMenuItems = useMemo(() => Object.values(menuData).flat(), []);
+  useEffect(() => {
+    if (Object.keys(menuData).length > 0 && !activeCategory) {
+        setActiveCategory(Object.keys(menuData)[0].replace(/\s+/g, '-').replace(/&/g, 'and'));
+    }
+  }, [menuData, activeCategory]);
+
+  const allMenuItems = useMemo(() => Object.values(menuData).flat(), [menuData]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -110,7 +119,7 @@ const CustomerApp: React.FC = () => {
         }
       });
     };
-  }, []);
+  }, [menuData]); // Re-run when menuData changes
 
 
   const addToCart = (itemToAdd: MenuItem, quantity: number, selectedSize?: { name: string; price: number }) => {
@@ -201,6 +210,9 @@ const CustomerApp: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <a href="#/kiosk" className="text-amber-800 hover:text-orange-600 p-2" aria-label="Kiosk Mode">
+                <MonitorIcon className="h-6 w-6" />
+            </a>
             <a href="#/admin" className="text-amber-800 hover:text-orange-600 p-2" aria-label="Admin Access">
                 <LockIcon className="h-6 w-6" />
             </a>
@@ -302,6 +314,7 @@ const CustomerApp: React.FC = () => {
             </div>
 
             {Object.entries(menuData).map(([category, items]) => {
+                const categoryItems = items as MenuItem[];
                 const IconComponent = categoryIcons[category];
                 const categoryId = category.replace(/\s+/g, '-').replace(/&/g, 'and');
                 return (
@@ -316,13 +329,19 @@ const CustomerApp: React.FC = () => {
                     <h2 className="text-4xl font-bold text-amber-800 tracking-tight">{category}</h2>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                    {items.map(item => (
+                    {categoryItems.map(item => (
                         <MenuItemCard key={item.id} item={item} onAddToCart={addToCart} />
                     ))}
                     </div>
                 </section>
                 );
             })}
+            
+            {Object.keys(menuData).length === 0 && (
+                <div className="text-center py-20">
+                    <p className="text-xl text-gray-500">Menu is currently being updated. Please check back later.</p>
+                </div>
+            )}
         </main>
       </div>
 

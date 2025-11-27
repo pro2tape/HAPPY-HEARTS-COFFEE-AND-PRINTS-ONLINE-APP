@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { CartItem, Order } from '../types';
 import { CloseIcon } from './Icons';
@@ -11,7 +12,6 @@ interface StaffCheckoutProps {
 }
 
 const StaffCheckout: React.FC<StaffCheckoutProps> = ({ cartItems, onCancel, onSuccess, staffName }) => {
-  const [customerIdentifier, setCustomerIdentifier] = useState('');
   const [orderTimeType, setOrderTimeType] = useState<'now' | 'later'>('now');
   const [scheduledTime, setScheduledTime] = useState('');
   const [orderType, setOrderType] = useState<'walk-in' | 'messenger'>('walk-in');
@@ -35,7 +35,7 @@ const StaffCheckout: React.FC<StaffCheckoutProps> = ({ cartItems, onCancel, onSu
       subtotal,
       deliveryFee,
       total,
-      customerName: customerIdentifier.trim() || 'Walk-in', // Use identifier as customer name
+      customerName: 'Walk-in',
       deliveryTime,
       staffName,
       status: 'new',
@@ -56,10 +56,6 @@ const StaffCheckout: React.FC<StaffCheckoutProps> = ({ cartItems, onCancel, onSu
   };
 
   const handleSendOrder = () => {
-    if (!customerIdentifier.trim()) {
-      alert("Please enter a customer name or table number.");
-      return;
-    }
     if (orderTimeType === 'later' && !scheduledTime) {
         alert("Please select a time for the scheduled order.");
         return;
@@ -73,8 +69,7 @@ const StaffCheckout: React.FC<StaffCheckoutProps> = ({ cartItems, onCancel, onSu
     onSuccess(newOrder);
   };
 
-  const isButtonDisabled = !customerIdentifier.trim() || 
-                           (orderTimeType === 'later' && !scheduledTime) ||
+  const isButtonDisabled = (orderTimeType === 'later' && !scheduledTime) ||
                            (orderType === 'messenger' && (!messengerName.trim() || !messengerContact.trim()));
   
   return (
@@ -192,19 +187,6 @@ const StaffCheckout: React.FC<StaffCheckoutProps> = ({ cartItems, onCancel, onSu
                     required
                 />
             )}
-          </div>
-
-          <div className="mt-6">
-            <label htmlFor="customerIdentifier" className="text-lg font-semibold mb-2 block">Customer Name / Table #</label>
-            <input
-              type="text"
-              id="customerIdentifier"
-              value={customerIdentifier}
-              onChange={(e) => setCustomerIdentifier(e.target.value)}
-              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
-              placeholder="e.g., Table 5 or Maria"
-              required
-            />
           </div>
         </div>
 

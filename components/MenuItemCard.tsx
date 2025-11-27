@@ -18,8 +18,13 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, onAddToCart }) => {
   const currentPrice = selectedSize ? selectedSize.price : item.price;
 
   return (
-    <div className="bg-white rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300 flex flex-col p-4">
-      <div className="flex flex-col flex-grow">
+    <div className="bg-white rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300 flex flex-col overflow-hidden">
+      {item.image && (
+        <div className="h-48 w-full overflow-hidden bg-gray-100">
+            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+        </div>
+      )}
+      <div className="p-4 flex flex-col flex-grow">
         <h3 className="text-xl font-bold text-gray-800">{item.name}</h3>
         <p className="text-gray-600 mt-2 flex-grow">{item.description}</p>
         

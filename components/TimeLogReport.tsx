@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { TimeLog } from '../types';
 import { DownloadIcon } from './Icons';
@@ -25,7 +26,17 @@ const TimeLogReport: React.FC = () => {
         if (storedLogs) {
             setLogs(JSON.parse(storedLogs));
         }
+        
+        const storedRate = localStorage.getItem('staffHourlyRate');
+        if (storedRate) {
+            setHourlyRate(Number(storedRate));
+        }
     }, []);
+
+    const handleRateChange = (newRate: number) => {
+        setHourlyRate(newRate);
+        localStorage.setItem('staffHourlyRate', newRate.toString());
+    };
 
     const processedData = useMemo(() => {
         const sessions: { staffName: string; timeIn: string; timeOut: string | null; duration: number }[] = [];
@@ -103,7 +114,7 @@ const TimeLogReport: React.FC = () => {
                         id="hourlyRate"
                         type="number"
                         value={hourlyRate}
-                        onChange={(e) => setHourlyRate(Number(e.target.value))}
+                        onChange={(e) => handleRateChange(Number(e.target.value))}
                         className="p-2 border rounded-lg w-32 focus:ring-2 focus:ring-slate-500 focus:outline-none"
                     />
                 </div>
@@ -118,7 +129,6 @@ const TimeLogReport: React.FC = () => {
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                            {Object.keys(processedData.staffTotals).length > 0 ? (
-                               // FIX: Explicitly type `data` to resolve TS error where it was inferred as `unknown`.
                                Object.entries(processedData.staffTotals).map(([staffName, data]: [string, { totalHours: number }]) => (
                                 <tr key={staffName}>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{staffName}</td>

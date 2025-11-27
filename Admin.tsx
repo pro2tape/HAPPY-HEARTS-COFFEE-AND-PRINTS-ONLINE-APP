@@ -1,6 +1,6 @@
+
 import React, { useState } from 'react';
 import { useMenuData } from '../hooks/useMenuData';
-import { MenuItem } from '../types';
 import SalesReport from './SalesReport';
 import TimeLogReport from './TimeLogReport';
 import SettingsModal from './SettingsModal';
@@ -93,13 +93,11 @@ const Admin: React.FC = () => {
             </div>
             <div id="printable-menu-content" className="hidden print:block">
                <h1 className="text-3xl font-bold text-center mb-6">Happy Hearts Menu</h1>
-              {Object.entries(menuData).map(([category, items]) => {
-                const categoryItems = items as MenuItem[];
-                return (
+              {Object.entries(menuData).map(([category, items]) => (
                 <div key={category} className="mb-6 break-after-page">
                   <h3 className="text-2xl font-bold border-b-2 border-gray-300 pb-2 mb-3">{category}</h3>
                   <ul>
-                    {categoryItems.map(item => (
+                    {items.map(item => (
                       <li key={item.id} className="flex justify-between py-1">
                         <span>{item.name}{item.sizes ? ` (${item.sizes.map(s => s.name).join(' / ')})` : ''}</span>
                         <span>
@@ -109,8 +107,7 @@ const Admin: React.FC = () => {
                     ))}
                   </ul>
                 </div>
-                );
-              })}
+              ))}
             </div>
           </section>
         </main>

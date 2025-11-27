@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { CartItem, MenuItem, Order } from './types';
-import { menuData } from './data/menuData';
+import { useMenuData } from './hooks/useMenuData';
 import MenuItemCard from './components/MenuItemCard';
 import KioskCheckout from './components/KioskCheckout';
 import { TrashIcon } from './components/Icons';
@@ -9,18 +9,28 @@ const KIOSK_RESET_TIMEOUT = 60000; // 60 seconds
 const CONFIRMATION_TIMEOUT = 30000; // 30 seconds
 
 const KioskApp: React.FC = () => {
+    const menuData = useMenuData();
     const [view, setView] = useState<'welcome' | 'ordering' | 'confirmation'>('welcome');
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
-    const [activeCategory, setActiveCategory] = useState<string>(Object.keys(menuData)[0]);
+    // Default category needs menuData to be loaded
+    const [activeCategory, setActiveCategory] = useState<string>('');
     const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
     
     const activityTimerRef = useRef<number | null>(null);
 
+    useEffect(() => {
+        if (Object.keys(menuData).length > 0 && !activeCategory) {
+            setActiveCategory(Object.keys(menuData)[0]);
+        }
+    }, [menuData, activeCategory]);
+
     const resetKiosk = () => {
         setCartItems([]);
         setCompletedOrder(null);
-        setActiveCategory(Object.keys(menuData)[0]);
+        if (Object.keys(menuData).length > 0) {
+            setActiveCategory(Object.keys(menuData)[0]);
+        }
         setView('welcome');
     };
 
@@ -152,11 +162,13 @@ const KioskApp: React.FC = () => {
             {/* Menu Items */}
             <main className="flex-1 p-8 overflow-y-auto">
                 <h2 className="text-5xl font-bold text-amber-800 tracking-tight mb-8">{activeCategory}</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                    {menuData[activeCategory].map(item => (
-                        <MenuItemCard key={item.id} item={item} onAddToCart={addToCart} />
-                    ))}
-                </div>
+                {menuData[activeCategory] && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                        {menuData[activeCategory].map(item => (
+                            <MenuItemCard key={item.id} item={item} onAddToCart={addToCart} />
+                        ))}
+                    </div>
+                )}
             </main>
 
             {/* Cart Sidebar */}
